@@ -3,6 +3,74 @@ import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { slugify } from "@/lib/utils";
 
+// GET /api/products - Get all products with optional filters
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = createServerSupabaseClient();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "データベースが設定されていません" },
+        { status: 503 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const pricing = searchParams.get("pricing");
+    const search = searchParams.get("search");
+    const seller_id = searchParams.get("seller_id");
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const offset = parseInt(searchParams.get("offset") || "0");
+
+    let query = supabase
+      .from("products")
+      .select(`
+        *,
+        seller:sellers(id, username, display_name, avatar_url)
+      `)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    if (pricing) {
+      const pricingTypes = pricing.split(",");
+      query = query.in("pricing_type", pricingTypes);
+    }
+
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,tagline.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+
+    if (seller_id) {
+      query = query.eq("seller_id", seller_id);
+    }
+
+    const { data: products, error } = await query;
+
+    if (error) {
+      console.error("Failed to fetch products:", error);
+      return NextResponse.json(
+        { error: "プロダクトの取得に失敗しました" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ products });
+  } catch (error) {
+    console.error("Products API error:", error);
+    return NextResponse.json(
+      { error: "サーバーエラーが発生しました" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/products - Create a new product
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
