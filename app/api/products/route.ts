@@ -35,6 +35,13 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerSupabaseClient();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "データベースが設定されていません" },
+        { status: 503 }
+      );
+    }
 
     // Get or create seller profile
     let { data: seller } = await supabase

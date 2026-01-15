@@ -24,6 +24,13 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerSupabaseClient();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "データベースが設定されていません" },
+        { status: 503 }
+      );
+    }
 
     // Verify product exists
     const { data: product, error: productError } = await supabase
