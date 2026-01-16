@@ -31,17 +31,32 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const { data: seller, error } = await supabase
+      let { data: seller, error } = await supabase
         .from("sellers")
         .select("*")
         .eq("clerk_user_id", userId)
         .single();
 
+      // Auto-create seller profile if it doesn't exist
       if (error || !seller) {
-        return NextResponse.json(
-          { error: "出品者プロフィールが見つかりません" },
-          { status: 404 }
-        );
+        const { data: newSeller, error: createError } = await supabase
+          .from("sellers")
+          .insert({
+            clerk_user_id: userId,
+            username: `user-${userId.slice(-8).toLowerCase()}`,
+            display_name: "新規出品者",
+          })
+          .select()
+          .single();
+
+        if (createError || !newSeller) {
+          console.error("Failed to create seller:", createError);
+          return NextResponse.json(
+            { error: "出品者プロフィールの作成に失敗しました" },
+            { status: 500 }
+          );
+        }
+        seller = newSeller;
       }
 
       return NextResponse.json({ seller });
@@ -140,27 +155,61 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Update seller profile
-    const { data: seller, error } = await supabase
+    // Check if seller exists
+    const { data: existingProfile } = await supabase
       .from("sellers")
-      .update({
-        username,
-        display_name,
-        company_name: company_name || null,
-        bio: bio || null,
-        avatar_url: avatar_url || null,
-        website_url: website_url || null,
-        twitter_url: twitter_url || null,
-        updated_at: new Date().toISOString(),
-      })
+      .select("id")
       .eq("clerk_user_id", userId)
-      .select()
       .single();
 
+    let seller;
+    let error;
+
+    if (existingProfile) {
+      // Update existing seller profile
+      const result = await supabase
+        .from("sellers")
+        .update({
+          username,
+          display_name,
+          company_name: company_name || null,
+          bio: bio || null,
+          avatar_url: avatar_url || null,
+          website_url: website_url || null,
+          twitter_url: twitter_url || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("clerk_user_id", userId)
+        .select()
+        .single();
+      
+      seller = result.data;
+      error = result.error;
+    } else {
+      // Create new seller profile
+      const result = await supabase
+        .from("sellers")
+        .insert({
+          clerk_user_id: userId,
+          username,
+          display_name,
+          company_name: company_name || null,
+          bio: bio || null,
+          avatar_url: avatar_url || null,
+          website_url: website_url || null,
+          twitter_url: twitter_url || null,
+        })
+        .select()
+        .single();
+      
+      seller = result.data;
+      error = result.error;
+    }
+
     if (error) {
-      console.error("Failed to update seller:", error);
+      console.error("Failed to save seller:", error);
       return NextResponse.json(
-        { error: "プロフィールの更新に失敗しました" },
+        { error: "プロフィールの保存に失敗しました", details: error.message },
         { status: 500 }
       );
     }

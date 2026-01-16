@@ -1,31 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
-export default function DashboardProfilePage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+interface ProfileData {
+  username: string;
+  display_name: string;
+  company_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  website_url: string | null;
+  twitter_url: string | null;
+}
 
-  const [profile, setProfile] = useState({
-    username: "yamada-corp",
-    displayName: "株式会社ヤマダ",
-    companyName: "株式会社ヤマダ",
-    bio: "中小企業向けのクラウドソリューションを提供しています。\n\n2020年創業。請求書管理やプロジェクト管理など、業務効率化を支援するSaaSを開発・運営しています。",
-    avatarUrl: "",
-    websiteUrl: "https://example.com",
-    twitterUrl: "https://twitter.com/yamada_corp",
+export default function DashboardProfilePage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const [profile, setProfile] = useState<ProfileData>({
+    username: "",
+    display_name: "",
+    company_name: "",
+    bio: "",
+    avatar_url: "",
+    website_url: "",
+    twitter_url: "",
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/sellers?current=true");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.seller) {
+            setProfile({
+              username: data.seller.username || "",
+              display_name: data.seller.display_name || "",
+              company_name: data.seller.company_name || "",
+              bio: data.seller.bio || "",
+              avatar_url: data.seller.avatar_url || "",
+              website_url: data.seller.website_url || "",
+              twitter_url: data.seller.twitter_url || "",
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // TODO: Implement profile update API
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setSuccessMessage("プロフィールを更新しました");
-    setTimeout(() => setSuccessMessage(null), 3000);
+    setIsSaving(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch("/api/sellers", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: profile.username,
+          display_name: profile.display_name,
+          company_name: profile.company_name || null,
+          bio: profile.bio || null,
+          avatar_url: profile.avatar_url || null,
+          website_url: profile.website_url || null,
+          twitter_url: profile.twitter_url || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "更新に失敗しました");
+      }
+
+      setSuccessMessage("プロフィールを更新しました");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -42,6 +118,12 @@ export default function DashboardProfilePage() {
         </div>
       )}
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form */}
         <div className="lg:col-span-2">
@@ -52,11 +134,11 @@ export default function DashboardProfilePage() {
                 <label className="label">プロフィール画像</label>
                 <div className="flex items-center gap-6 mt-2">
                   <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-3xl font-bold">
-                    {profile.displayName.charAt(0)}
+                    {profile.display_name?.charAt(0) || "?"}
                   </div>
                   <div>
-                    <button type="button" className="btn btn-secondary text-sm">
-                      画像をアップロード
+                    <button type="button" className="btn btn-secondary text-sm" disabled>
+                      画像をアップロード (準備中)
                     </button>
                     <p className="text-xs text-gray-500 mt-2">
                       推奨: 400x400px以上、JPG/PNG形式、最大2MB
@@ -91,15 +173,15 @@ export default function DashboardProfilePage() {
 
               {/* Display Name */}
               <div>
-                <label htmlFor="displayName" className="label">
+                <label htmlFor="display_name" className="label">
                   表示名 <span className="text-red-500">*</span>
                 </label>
                 <input
-                  id="displayName"
+                  id="display_name"
                   type="text"
-                  value={profile.displayName}
+                  value={profile.display_name}
                   onChange={(e) =>
-                    setProfile({ ...profile, displayName: e.target.value })
+                    setProfile({ ...profile, display_name: e.target.value })
                   }
                   className="input mt-1"
                   required
@@ -108,15 +190,15 @@ export default function DashboardProfilePage() {
 
               {/* Company Name */}
               <div>
-                <label htmlFor="companyName" className="label">
+                <label htmlFor="company_name" className="label">
                   会社名
                 </label>
                 <input
-                  id="companyName"
+                  id="company_name"
                   type="text"
-                  value={profile.companyName}
+                  value={profile.company_name || ""}
                   onChange={(e) =>
-                    setProfile({ ...profile, companyName: e.target.value })
+                    setProfile({ ...profile, company_name: e.target.value })
                   }
                   className="input mt-1"
                 />
@@ -130,29 +212,26 @@ export default function DashboardProfilePage() {
                 <textarea
                   id="bio"
                   rows={5}
-                  value={profile.bio}
+                  value={profile.bio || ""}
                   onChange={(e) =>
                     setProfile({ ...profile, bio: e.target.value })
                   }
                   className="input mt-1 resize-none"
                   placeholder="会社やサービスについて紹介してください"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Markdown形式で記述できます
-                </p>
               </div>
 
               {/* Website URL */}
               <div>
-                <label htmlFor="websiteUrl" className="label">
+                <label htmlFor="website_url" className="label">
                   ウェブサイト
                 </label>
                 <input
-                  id="websiteUrl"
+                  id="website_url"
                   type="url"
-                  value={profile.websiteUrl}
+                  value={profile.website_url || ""}
                   onChange={(e) =>
-                    setProfile({ ...profile, websiteUrl: e.target.value })
+                    setProfile({ ...profile, website_url: e.target.value })
                   }
                   className="input mt-1"
                   placeholder="https://"
@@ -161,15 +240,15 @@ export default function DashboardProfilePage() {
 
               {/* Twitter URL */}
               <div>
-                <label htmlFor="twitterUrl" className="label">
+                <label htmlFor="twitter_url" className="label">
                   Twitter / X
                 </label>
                 <input
-                  id="twitterUrl"
+                  id="twitter_url"
                   type="url"
-                  value={profile.twitterUrl}
+                  value={profile.twitter_url || ""}
                   onChange={(e) =>
-                    setProfile({ ...profile, twitterUrl: e.target.value })
+                    setProfile({ ...profile, twitter_url: e.target.value })
                   }
                   className="input mt-1"
                   placeholder="https://twitter.com/username"
@@ -179,10 +258,10 @@ export default function DashboardProfilePage() {
               <div className="pt-4 border-t border-gray-200">
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSaving}
                   className="btn btn-primary"
                 >
-                  {isLoading ? "保存中..." : "変更を保存"}
+                  {isSaving ? "保存中..." : "変更を保存"}
                 </button>
               </div>
             </div>
@@ -197,13 +276,13 @@ export default function DashboardProfilePage() {
             </h2>
             <div className="text-center">
               <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-2xl font-bold mx-auto mb-4">
-                {profile.displayName.charAt(0)}
+                {profile.display_name?.charAt(0) || "?"}
               </div>
               <h3 className="font-semibold text-gray-900">
-                {profile.displayName || "表示名"}
+                {profile.display_name || "表示名"}
               </h3>
-              {profile.companyName && (
-                <p className="text-sm text-gray-600">{profile.companyName}</p>
+              {profile.company_name && (
+                <p className="text-sm text-gray-600">{profile.company_name}</p>
               )}
               <p className="text-sm text-gray-500 mt-2">
                 @{profile.username || "username"}
@@ -214,14 +293,14 @@ export default function DashboardProfilePage() {
                 </p>
               )}
               <div className="flex justify-center gap-3 mt-4">
-                {profile.websiteUrl && (
+                {profile.website_url && (
                   <span className="text-gray-400">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                     </svg>
                   </span>
                 )}
-                {profile.twitterUrl && (
+                {profile.twitter_url && (
                   <span className="text-gray-400">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -230,15 +309,17 @@ export default function DashboardProfilePage() {
                 )}
               </div>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <Link
-                href={`/sellers/${profile.username}`}
-                className="text-sm text-primary-600 hover:text-primary-700"
-                target="_blank"
-              >
-                公開ページを見る →
-              </Link>
-            </div>
+            {profile.username && (
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <Link
+                  href={`/sellers/${profile.username}`}
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                  target="_blank"
+                >
+                  公開ページを見る →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
