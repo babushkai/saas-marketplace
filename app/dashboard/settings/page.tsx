@@ -2,13 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useClerk } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
+
+// Dynamically import Clerk to avoid build errors when not configured
+const ClerkButton = dynamic(
+  () =>
+    import("@clerk/nextjs").then((mod) => ({
+      default: ({ onClick, className, children }: { onClick: () => void; className: string; children: React.ReactNode }) => {
+        const { openUserProfile } = mod.useClerk();
+        return (
+          <button onClick={() => openUserProfile()} className={className}>
+            {children}
+          </button>
+        );
+      },
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <button className="btn btn-primary opacity-50" disabled>
+        読み込み中...
+      </button>
+    ),
+  }
+);
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("notifications");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { openUserProfile } = useClerk();
 
   const [notifications, setNotifications] = useState({
     emailInquiries: true,
@@ -223,12 +245,9 @@ export default function SettingsPage() {
             <p className="text-gray-600 mb-4">
               パスワードの変更、二要素認証の設定、その他のセキュリティ設定はClerkアカウント管理から行えます。
             </p>
-            <button
-              onClick={() => openUserProfile()}
-              className="btn btn-primary"
-            >
+            <ClerkButton onClick={() => {}} className="btn btn-primary">
               アカウント設定を開く
-            </button>
+            </ClerkButton>
           </div>
 
           <div className="card p-6">
@@ -265,12 +284,9 @@ export default function SettingsPage() {
               アカウントを削除すると、すべてのデータが完全に削除されます。
               この操作は取り消せません。
             </p>
-            <button
-              onClick={() => openUserProfile()}
-              className="btn bg-red-600 text-white hover:bg-red-700"
-            >
+            <ClerkButton onClick={() => {}} className="btn bg-red-600 text-white hover:bg-red-700">
               アカウント管理へ
-            </button>
+            </ClerkButton>
           </div>
         </div>
       )}
