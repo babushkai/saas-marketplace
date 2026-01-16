@@ -18,14 +18,7 @@ const values = [
   },
 ];
 
-const techStack = [
-  { name: "Next.js 14", description: "App Router & React Server Components" },
-  { name: "TypeScript", description: "型安全な開発" },
-  { name: "Tailwind CSS", description: "ユーティリティファーストCSS" },
-  { name: "Supabase", description: "PostgreSQL & Storage" },
-  { name: "Clerk", description: "認証・ユーザー管理" },
-  { name: "Vercel", description: "ホスティング & デプロイ" },
-];
+
 
 export default function AboutPage() {
   return (
@@ -124,61 +117,6 @@ export default function AboutPage() {
                 <p className="text-gray-600">{value.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tech Stack */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-4">
-            技術スタック
-          </h2>
-          <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-            モダンなフルスタック技術で構築されています。
-            すべてのコードはGitHubで公開しています。
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
-            {techStack.map((tech) => (
-              <div key={tech.name} className="card p-4 text-center">
-                <h3 className="font-semibold text-gray-900 mb-1">{tech.name}</h3>
-                <p className="text-xs text-gray-500">{tech.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contributing */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              コントリビュート歓迎
-            </h2>
-            <p className="text-lg text-gray-600 leading-relaxed mb-8">
-              バグ報告、機能リクエスト、プルリクエストなど、
-              どんな形での貢献も大歓迎です。
-              一緒に日本のSaaSエコシステムを盛り上げましょう！
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://github.com/babushkai/saas-marketplace/issues"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-secondary"
-              >
-                Issue を報告
-              </a>
-              <a
-                href="https://github.com/babushkai/saas-marketplace/pulls"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary"
-              >
-                PR を送る
-              </a>
-            </div>
           </div>
         </div>
       </section>
