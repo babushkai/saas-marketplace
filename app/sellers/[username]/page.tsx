@@ -4,6 +4,8 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product, Seller } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+
 interface SellerPageProps {
   params: { username: string };
 }
