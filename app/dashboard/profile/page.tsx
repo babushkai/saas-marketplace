@@ -156,11 +156,12 @@ export default function DashboardProfilePage() {
                     id="username"
                     type="text"
                     value={profile.username}
-                    onChange={(e) =>
-                      setProfile({ ...profile, username: e.target.value })
-                    }
+                    onChange={(e) => {
+                      // Only allow lowercase letters, numbers, and hyphens
+                      const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                      setProfile({ ...profile, username: value });
+                    }}
                     className="input flex-1"
-                    pattern="[a-z0-9\-]+"
                     required
                   />
                 </div>
