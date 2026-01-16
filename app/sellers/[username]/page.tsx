@@ -14,6 +14,7 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
   const supabase = createServerSupabaseClient();
   
   if (!supabase) {
+    console.error("Supabase client not available");
     return null;
   }
 
@@ -23,7 +24,10 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
     .eq("username", username)
     .single();
 
+  console.log("Seller query result:", { username, seller, error });
+
   if (error || !seller) {
+    console.error("Seller not found:", error);
     return null;
   }
 
@@ -41,13 +45,18 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
 }
 
 export default async function SellerPage({ params }: SellerPageProps) {
-  const data = await getSellerWithProducts(params.username);
+  const username = params.username;
+  console.log("SellerPage rendering for username:", username);
+  
+  const data = await getSellerWithProducts(username);
 
   if (!data) {
+    console.error("No data returned for username:", username);
     notFound();
   }
 
   const { seller, products } = data;
+  console.log("Rendering seller:", seller.display_name);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
