@@ -31,10 +31,13 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      // Get the most recently updated seller for this user
       let { data: seller, error } = await supabase
         .from("sellers")
         .select("*")
         .eq("clerk_user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
         .single();
 
       // Auto-create seller profile if it doesn't exist
@@ -155,18 +158,20 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Check if seller exists
+    // Check if seller exists - get the most recently updated one
     const { data: existingProfile } = await supabase
       .from("sellers")
       .select("id")
       .eq("clerk_user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .single();
 
     let seller;
     let error;
 
     if (existingProfile) {
-      // Update existing seller profile
+      // Update existing seller profile by ID (not clerk_user_id to avoid duplicates)
       const result = await supabase
         .from("sellers")
         .update({
@@ -179,7 +184,7 @@ export async function PUT(request: NextRequest) {
           twitter_url: twitter_url || null,
           updated_at: new Date().toISOString(),
         })
-        .eq("clerk_user_id", userId)
+        .eq("id", existingProfile.id)
         .select()
         .single();
       
