@@ -6,95 +6,6 @@ import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
 import type { Product } from "@/types/database";
 
-// Mock data - replace with actual API call
-const allProducts: Product[] = [
-  {
-    id: "1",
-    seller_id: "seller-1",
-    slug: "cloud-invoice",
-    name: "クラウド請求書",
-    tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-    description: "中小企業向けの請求書管理SaaS",
-    category: "finance",
-    pricing_type: "freemium",
-    price_info: "¥980/月〜",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    seller_id: "seller-1",
-    slug: "team-chat-pro",
-    name: "チームチャットPro",
-    tagline: "チームコミュニケーションを加速する国産チャットツール",
-    description: "日本企業向けのビジネスチャット",
-    category: "communication",
-    pricing_type: "paid",
-    price_info: "¥500/ユーザー/月",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    seller_id: "seller-2",
-    slug: "ai-writing-assistant",
-    name: "AI文章アシスタント",
-    tagline: "日本語に最適化されたAIライティング支援ツール",
-    description: "日本語文章の校正・生成をAIでサポート",
-    category: "productivity",
-    pricing_type: "free",
-    price_info: null,
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    seller_id: "seller-2",
-    slug: "sales-crm",
-    name: "営業管理CRM",
-    tagline: "中小企業向けのシンプルな営業管理ツール",
-    description: "顧客管理、商談管理、売上予測を一元管理",
-    category: "sales",
-    pricing_type: "freemium",
-    price_info: "¥2,980/月〜",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "5",
-    seller_id: "seller-3",
-    slug: "hr-management",
-    name: "人事労務クラウド",
-    tagline: "入退社から給与計算まで、人事労務をまるごとクラウド化",
-    description: "人事労務管理のオールインワンSaaS",
-    category: "hr",
-    pricing_type: "paid",
-    price_info: "¥400/従業員/月",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
 function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
@@ -109,26 +20,26 @@ function SearchContent() {
     }
   }, [initialQuery]);
 
-  const performSearch = (searchQuery: string) => {
+  const performSearch = async (searchQuery: string) => {
     setIsSearching(true);
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = allProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setResults(filtered);
+    try {
+      const response = await fetch(`/api/products?search=${encodeURIComponent(searchQuery)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data.products || []);
+      }
+    } catch (error) {
+      console.error("Search failed:", error);
+      setResults([]);
+    } finally {
       setIsSearching(false);
-    }, 300);
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       performSearch(query);
-      // Update URL without reload
       window.history.pushState({}, "", `/search?q=${encodeURIComponent(query)}`);
     }
   };
