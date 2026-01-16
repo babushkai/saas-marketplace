@@ -1,77 +1,6 @@
 import { ProductCard } from "@/components/products/ProductCard";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
-
-// Mock data for development
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    seller_id: "seller-1",
-    slug: "cloud-invoice",
-    name: "クラウド請求書",
-    tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-    description: "中小企業向けの請求書管理SaaS",
-    category: "finance",
-    pricing_type: "freemium",
-    price_info: "¥980/月〜",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    seller_id: "seller-1",
-    slug: "team-chat-pro",
-    name: "チームチャットPro",
-    tagline: "チームコミュニケーションを加速する国産チャットツール",
-    description: "日本企業向けのビジネスチャット",
-    category: "communication",
-    pricing_type: "paid",
-    price_info: "¥500/ユーザー/月",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    seller_id: "seller-2",
-    slug: "ai-writing-assistant",
-    name: "AI文章アシスタント",
-    tagline: "日本語に最適化されたAIライティング支援ツール",
-    description: "日本語文章の校正・生成をAIでサポート",
-    category: "productivity",
-    pricing_type: "free",
-    price_info: null,
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    seller_id: "seller-3",
-    slug: "hr-management",
-    name: "人事らくらく",
-    tagline: "中小企業向け人事労務管理システム",
-    description: "給与計算から勤怠管理まで一元化",
-    category: "hr",
-    pricing_type: "contact",
-    price_info: null,
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
 
 const categories = [
   { id: "all", name: "すべて" },
@@ -87,14 +16,36 @@ interface ProductsPageProps {
   searchParams: { category?: string; q?: string };
 }
 
-export default function ProductsPage({ searchParams }: ProductsPageProps) {
-  const selectedCategory = searchParams.category || "all";
+async function getProducts(category?: string): Promise<Product[]> {
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return [];
+  }
 
-  // Filter products (mock implementation)
-  const filteredProducts =
-    selectedCategory === "all"
-      ? mockProducts
-      : mockProducts.filter((p) => p.category === selectedCategory);
+  let query = supabase
+    .from("products")
+    .select("*")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  if (category && category !== "all") {
+    query = query.eq("category", category);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Failed to fetch products:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const selectedCategory = searchParams.category || "all";
+  const products = await getProducts(selectedCategory);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -183,17 +134,17 @@ export default function ProductsPage({ searchParams }: ProductsPageProps) {
 
           {/* Results Count */}
           <div className="mb-4 text-sm text-gray-600">
-            {filteredProducts.length}件のプロダクト
+            {products.length}件のプロダクト
           </div>
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
-          {filteredProducts.length === 0 && (
+          {products.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500">該当するプロダクトがありません</p>
             </div>

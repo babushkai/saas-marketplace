@@ -1,72 +1,68 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
 
-// Mock data for development - replace with Supabase queries
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    seller_id: "seller-1",
-    slug: "cloud-invoice",
-    name: "クラウド請求書",
-    tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-    description: "中小企業向けの請求書管理SaaS",
-    category: "finance",
-    pricing_type: "freemium",
-    price_info: "¥980/月〜",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    seller_id: "seller-1",
-    slug: "team-chat-pro",
-    name: "チームチャットPro",
-    tagline: "チームコミュニケーションを加速する国産チャットツール",
-    description: "日本企業向けのビジネスチャット",
-    category: "communication",
-    pricing_type: "paid",
-    price_info: "¥500/ユーザー/月",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    seller_id: "seller-2",
-    slug: "ai-writing-assistant",
-    name: "AI文章アシスタント",
-    tagline: "日本語に最適化されたAIライティング支援ツール",
-    description: "日本語文章の校正・生成をAIでサポート",
-    category: "productivity",
-    pricing_type: "free",
-    price_info: null,
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
 const categories = [
-  { id: "marketing", name: "マーケティング", count: 24 },
-  { id: "sales", name: "営業・CRM", count: 18 },
-  { id: "finance", name: "経理・財務", count: 15 },
-  { id: "hr", name: "人事・労務", count: 12 },
-  { id: "productivity", name: "業務効率化", count: 31 },
-  { id: "communication", name: "コミュニケーション", count: 9 },
+  { id: "marketing", name: "マーケティング" },
+  { id: "sales", name: "営業・CRM" },
+  { id: "finance", name: "経理・財務" },
+  { id: "hr", name: "人事・労務" },
+  { id: "productivity", name: "業務効率化" },
+  { id: "communication", name: "コミュニケーション" },
 ];
 
-export default function HomePage() {
+async function getFeaturedProducts(): Promise<Product[]> {
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  if (error) {
+    console.error("Failed to fetch products:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+async function getCategoryCounts(): Promise<Record<string, number>> {
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return {};
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("category")
+    .eq("is_published", true);
+
+  if (error || !data) {
+    return {};
+  }
+
+  const counts: Record<string, number> = {};
+  data.forEach((p) => {
+    counts[p.category] = (counts[p.category] || 0) + 1;
+  });
+
+  return counts;
+}
+
+export default async function HomePage() {
+  const [products, categoryCounts] = await Promise.all([
+    getFeaturedProducts(),
+    getCategoryCounts(),
+  ]);
   return (
     <div>
       {/* Hero Section */}
@@ -112,7 +108,7 @@ export default function HomePage() {
                   {category.name}
                 </span>
                 <span className="block text-sm text-gray-500 mt-1">
-                  {category.count}件
+                  {categoryCounts[category.id] || 0}件
                 </span>
               </Link>
             ))}
@@ -135,7 +131,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
