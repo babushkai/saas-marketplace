@@ -1,72 +1,51 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/products/ProductCard";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product, Seller } from "@/types/database";
-
-// Mock data for development
-const mockSeller: Seller = {
-  id: "seller-1",
-  clerk_user_id: "user_xxx",
-  username: "fintech-inc",
-  display_name: "フィンテック株式会社",
-  company_name: "フィンテック株式会社",
-  bio: "中小企業のDXを推進するスタートアップです。請求書管理、経費精算、会計連携など、バックオフィス業務を効率化するSaaSを提供しています。",
-  avatar_url: null,
-  website_url: "https://example.com",
-  twitter_url: "https://twitter.com/example",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    seller_id: "seller-1",
-    slug: "cloud-invoice",
-    name: "クラウド請求書",
-    tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-    description: "中小企業向けの請求書管理SaaS",
-    category: "finance",
-    pricing_type: "freemium",
-    price_info: "¥980/月〜",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    seller_id: "seller-1",
-    slug: "expense-tracker",
-    name: "経費精算くん",
-    tagline: "スマホで撮影するだけで経費精算が完了",
-    description: "OCRで領収書を自動読み取り",
-    category: "finance",
-    pricing_type: "paid",
-    price_info: "¥300/ユーザー/月",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
 
 interface SellerPageProps {
   params: { username: string };
 }
 
-export default function SellerPage({ params }: SellerPageProps) {
-  // In production, fetch from Supabase
-  const seller = params.username === "fintech-inc" ? mockSeller : null;
-  const products = params.username === "fintech-inc" ? mockProducts : [];
+async function getSellerWithProducts(username: string): Promise<{ seller: Seller; products: Product[] } | null> {
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return null;
+  }
 
-  if (!seller) {
+  const { data: seller, error } = await supabase
+    .from("sellers")
+    .select("*")
+    .eq("username", username)
+    .single();
+
+  if (error || !seller) {
+    return null;
+  }
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .eq("seller_id", seller.id)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  return {
+    seller: seller as Seller,
+    products: (products || []) as Product[],
+  };
+}
+
+export default async function SellerPage({ params }: SellerPageProps) {
+  const data = await getSellerWithProducts(params.username);
+
+  if (!data) {
     notFound();
   }
+
+  const { seller, products } = data;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -97,7 +76,7 @@ export default function SellerPage({ params }: SellerPageProps) {
             )}
 
             {seller.bio && (
-              <p className="text-gray-600 mt-4 max-w-2xl">{seller.bio}</p>
+              <p className="text-gray-600 mt-4 max-w-2xl whitespace-pre-line">{seller.bio}</p>
             )}
 
             <div className="flex items-center gap-4 mt-4">
