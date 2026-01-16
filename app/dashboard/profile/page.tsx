@@ -65,29 +65,36 @@ export default function DashboardProfilePage() {
     setError(null);
     setSuccessMessage(null);
 
+    const payload = {
+      username: profile.username,
+      display_name: profile.display_name,
+      company_name: profile.company_name || null,
+      bio: profile.bio || null,
+      avatar_url: profile.avatar_url || null,
+      website_url: profile.website_url || null,
+      twitter_url: profile.twitter_url || null,
+    };
+
+    console.log("Saving profile with payload:", payload);
+
     try {
       const response = await fetch("/api/sellers", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: profile.username,
-          display_name: profile.display_name,
-          company_name: profile.company_name || null,
-          bio: profile.bio || null,
-          avatar_url: profile.avatar_url || null,
-          website_url: profile.website_url || null,
-          twitter_url: profile.twitter_url || null,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      const data = await response.json();
+      console.log("API response:", response.status, data);
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || "更新に失敗しました");
       }
 
       setSuccessMessage("プロフィールを更新しました");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
+      console.error("Save error:", err);
       setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
       setIsSaving(false);
