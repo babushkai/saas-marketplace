@@ -11,34 +11,48 @@ interface SellerPageProps {
 }
 
 async function getSellerWithProducts(username: string): Promise<{ seller: Seller; products: Product[] } | null> {
-  // Use internal API to ensure consistent data fetching
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const supabase = createServerSupabaseClient();
   
-  try {
-    const response = await fetch(`${baseUrl}/api/sellers?username=${encodeURIComponent(username)}`, {
-      cache: 'no-store',
-    });
-    
-    if (!response.ok) {
-      return null;
-    }
-    
-    const data = await response.json();
-    
-    if (!data.seller) {
-      return null;
-    }
-    
-    return {
-      seller: data.seller as Seller,
-      products: (data.seller.products || []) as Product[],
-    };
-  } catch (error) {
-    console.error("Failed to fetch seller:", error);
+  if (!supabase) {
+    console.error("Supabase client not available");
     return null;
   }
+
+  // First, check how many sellers have this username
+  const { data: allSellers, error: countError } = await supabase
+    .from("sellers")
+    .select("id, username, display_name, updated_at")
+    .eq("username", username);
+  
+  console.log("All sellers with username:", username, allSellers, countError);
+
+  // Get the most recently updated seller
+  const { data: seller, error } = await supabase
+    .from("sellers")
+    .select("*")
+    .eq("username", username)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  console.log("Selected seller:", seller?.display_name, seller?.id);
+
+  if (error || !seller) {
+    console.error("Seller not found:", error);
+    return null;
+  }
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .eq("seller_id", seller.id)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  return {
+    seller: seller as Seller,
+    products: (products || []) as Product[],
+  };
 }
 
 export default async function SellerPage({ params }: SellerPageProps) {
