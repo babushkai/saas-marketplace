@@ -10,9 +10,9 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.slug}`} className="block group">
-      <div className="card p-4 h-full hover:shadow-md transition-shadow">
+      <div className="card card-hover p-5 h-full">
         <div className="flex items-start gap-4">
-          <div className="relative w-16 h-16 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+          <div className="relative w-14 h-14 flex-shrink-0 bg-slate-50 rounded-xl overflow-hidden">
             {product.logo_url ? (
               <Image
                 src={product.logo_url}
@@ -21,28 +21,28 @@ export function ProductCard({ product }: ProductCardProps) {
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
+              <div className="w-full h-full flex items-center justify-center text-xl font-semibold text-slate-300">
                 {product.name.charAt(0)}
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors truncate">
+            <h3 className="font-semibold text-slate-800 group-hover:text-slate-600 transition-colors truncate">
               {product.name}
             </h3>
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+            <p className="text-sm text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
               {product.tagline}
             </p>
 
             <div className="flex items-center gap-2 mt-3">
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPricingColor(product.pricing_type)}`}
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getPricingColor(product.pricing_type)}`}
               >
                 {getPricingLabel(product.pricing_type)}
               </span>
               {product.price_info && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-slate-400">
                   {product.price_info}
                 </span>
               )}

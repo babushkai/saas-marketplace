@@ -24,10 +24,10 @@ export function getPricingLabel(type: PricingType): string {
 
 export function getPricingColor(type: PricingType): string {
   const colors: Record<PricingType, string> = {
-    free: "bg-green-100 text-green-800",
-    paid: "bg-blue-100 text-blue-800",
-    freemium: "bg-purple-100 text-purple-800",
-    contact: "bg-gray-100 text-gray-800",
+    free: "bg-emerald-50 text-emerald-700",
+    paid: "bg-slate-100 text-slate-700",
+    freemium: "bg-violet-50 text-violet-700",
+    contact: "bg-amber-50 text-amber-700",
   };
   return colors[type];
 }
