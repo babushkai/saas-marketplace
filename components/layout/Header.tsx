@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-
-// Mock auth state for UI preview
-const MOCK_SIGNED_IN = true;
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export function Header() {
-  const isSignedIn = MOCK_SIGNED_IN;
-
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,32 +25,43 @@ export function Header() {
               >
                 カテゴリー
               </Link>
+              <Link
+                href="/pricing"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                料金プラン
+              </Link>
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
-            {isSignedIn ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                >
-                  ダッシュボード
-                </Link>
-                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                  U
-                </div>
-              </>
-            ) : (
-              <>
-                <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                  ログイン
-                </button>
-                <button className="btn btn-primary text-sm">
-                  無料で始める
-                </button>
-              </>
-            )}
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                ダッシュボード
+              </Link>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                  },
+                }}
+              />
+            </SignedIn>
+            <SignedOut>
+              <Link
+                href="/sign-in"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                ログイン
+              </Link>
+              <Link href="/sign-up" className="btn btn-primary text-sm">
+                無料で始める
+              </Link>
+            </SignedOut>
           </div>
         </div>
       </div>

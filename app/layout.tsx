@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
+import { jaJP } from "@clerk/localizations";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -15,12 +17,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
-      <body className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <ClerkProvider localization={jaJP}>
+      <html lang="ja">
+        <body className="min-h-screen flex flex-col bg-gray-50">
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
