@@ -16,15 +16,28 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <ClerkProvider localization={jaJP}>
-      <html lang="ja">
-        <body className="min-h-screen flex flex-col bg-gray-50">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </body>
-      </html>
-    </ClerkProvider>
+  // Check if Clerk is properly configured
+  const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const isClerkConfigured = clerkPubKey && !clerkPubKey.includes("placeholder") && !clerkPubKey.includes("xxx");
+
+  const content = (
+    <html lang="ja">
+      <body className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
+    </html>
   );
+
+  // Only wrap with ClerkProvider if properly configured
+  if (isClerkConfigured) {
+    return (
+      <ClerkProvider localization={jaJP}>
+        {content}
+      </ClerkProvider>
+    );
+  }
+
+  return content;
 }
