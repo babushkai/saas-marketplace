@@ -11,37 +11,34 @@ interface SellerPageProps {
 }
 
 async function getSellerWithProducts(username: string): Promise<{ seller: Seller; products: Product[] } | null> {
-  const supabase = createServerSupabaseClient();
+  // Use internal API to ensure consistent data fetching
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   
-  if (!supabase) {
-    console.error("Supabase client not available");
+  try {
+    const response = await fetch(`${baseUrl}/api/sellers?username=${encodeURIComponent(username)}`, {
+      cache: 'no-store',
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (!data.seller) {
+      return null;
+    }
+    
+    return {
+      seller: data.seller as Seller,
+      products: (data.seller.products || []) as Product[],
+    };
+  } catch (error) {
+    console.error("Failed to fetch seller:", error);
     return null;
   }
-
-  const { data: seller, error } = await supabase
-    .from("sellers")
-    .select("*")
-    .eq("username", username)
-    .single();
-
-  console.log("Seller query result:", { username, seller, error });
-
-  if (error || !seller) {
-    console.error("Seller not found:", error);
-    return null;
-  }
-
-  const { data: products } = await supabase
-    .from("products")
-    .select("*")
-    .eq("seller_id", seller.id)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
-
-  return {
-    seller: seller as Seller,
-    products: (products || []) as Product[],
-  };
 }
 
 export default async function SellerPage({ params }: SellerPageProps) {
