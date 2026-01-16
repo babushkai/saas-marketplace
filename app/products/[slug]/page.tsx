@@ -3,66 +3,58 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product, Seller } from "@/types/database";
-
-// Mock data for development
-const mockProduct: Product & { seller: Seller } = {
-  id: "1",
-  seller_id: "seller-1",
-  slug: "cloud-invoice",
-  name: "クラウド請求書",
-  tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-  description: `## クラウド請求書とは
-
-中小企業向けの請求書管理SaaSです。請求書の作成から送付、入金管理までをクラウド上で完結できます。
-
-### 主な機能
-
-- **請求書作成**: テンプレートから簡単に請求書を作成
-- **自動送付**: メールやPDFでの自動送付
-- **入金管理**: 銀行口座との連携で入金を自動照合
-- **レポート**: 売上・未回収レポートの自動生成
-
-### こんな方におすすめ
-
-- 請求書作成に時間がかかっている
-- 入金管理をExcelで行っている
-- 経理業務を効率化したい`,
-  category: "finance",
-  pricing_type: "freemium",
-  price_info: "¥980/月〜",
-  logo_url: null,
-  screenshots: [],
-  website_url: "https://example.com",
-  is_published: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  seller: {
-    id: "seller-1",
-    clerk_user_id: "user_xxx",
-    username: "fintech-inc",
-    display_name: "フィンテック株式会社",
-    company_name: "フィンテック株式会社",
-    bio: "中小企業のDXを推進するスタートアップです",
-    avatar_url: null,
-    website_url: "https://example.com",
-    twitter_url: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-};
 
 interface ProductPageProps {
   params: { slug: string };
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  // In production, fetch from Supabase
-  const product = params.slug === "cloud-invoice" ? mockProduct : null;
+async function getProduct(slug: string): Promise<(Product & { seller: Seller | null }) | null> {
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      *,
+      seller:sellers(*)
+    `)
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as Product & { seller: Seller | null };
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  const product = await getProduct(params.slug);
 
   if (!product) {
     notFound();
   }
+
+  // Default seller info if not available
+  const seller = product.seller || {
+    id: "",
+    clerk_user_id: "",
+    username: "unknown",
+    display_name: "不明",
+    company_name: null,
+    bio: null,
+    avatar_url: null,
+    website_url: null,
+    twitter_url: null,
+    created_at: "",
+    updated_at: "",
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -184,36 +176,36 @@ export default function ProductPage({ params }: ProductPageProps) {
               提供企業
             </h2>
             <Link
-              href={`/sellers/${product.seller.username}`}
+              href={`/sellers/${seller.username}`}
               className="flex items-center gap-3 group"
             >
               <div className="relative w-12 h-12 flex-shrink-0 bg-gray-100 rounded-full overflow-hidden">
-                {product.seller.avatar_url ? (
+                {seller.avatar_url ? (
                   <Image
-                    src={product.seller.avatar_url}
-                    alt={product.seller.display_name}
+                    src={seller.avatar_url}
+                    alt={seller.display_name}
                     fill
                     className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-400">
-                    {product.seller.display_name.charAt(0)}
+                    {seller.display_name.charAt(0)}
                   </div>
                 )}
               </div>
               <div>
                 <p className="font-medium text-gray-900 group-hover:text-primary-600">
-                  {product.seller.display_name}
+                  {seller.display_name}
                 </p>
-                {product.seller.company_name && (
+                {seller.company_name && (
                   <p className="text-sm text-gray-500">
-                    {product.seller.company_name}
+                    {seller.company_name}
                   </p>
                 )}
               </div>
             </Link>
-            {product.seller.bio && (
-              <p className="mt-4 text-sm text-gray-600">{product.seller.bio}</p>
+            {seller.bio && (
+              <p className="mt-4 text-sm text-gray-600">{seller.bio}</p>
             )}
           </div>
 
