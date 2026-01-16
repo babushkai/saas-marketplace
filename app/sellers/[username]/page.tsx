@@ -14,19 +14,11 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
   const supabase = createServerSupabaseClient();
   
   if (!supabase) {
-    console.error("Supabase client not available");
     return null;
   }
 
-  // First, check how many sellers have this username
-  const { data: allSellers, error: countError } = await supabase
-    .from("sellers")
-    .select("id, username, display_name, updated_at")
-    .eq("username", username);
-  
-  console.log("All sellers with username:", username, allSellers, countError);
-
-  // Get the most recently updated seller
+  // Get the most recently updated seller with this username
+  // (handles case where duplicate usernames may exist)
   const { data: seller, error } = await supabase
     .from("sellers")
     .select("*")
@@ -35,10 +27,7 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
     .limit(1)
     .single();
 
-  console.log("Selected seller:", seller?.display_name, seller?.id);
-
   if (error || !seller) {
-    console.error("Seller not found:", error);
     return null;
   }
 
@@ -56,18 +45,13 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
 }
 
 export default async function SellerPage({ params }: SellerPageProps) {
-  const username = params.username;
-  console.log("SellerPage rendering for username:", username);
-  
-  const data = await getSellerWithProducts(username);
+  const data = await getSellerWithProducts(params.username);
 
   if (!data) {
-    console.error("No data returned for username:", username);
     notFound();
   }
 
   const { seller, products } = data;
-  console.log("Rendering seller:", seller.display_name);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
