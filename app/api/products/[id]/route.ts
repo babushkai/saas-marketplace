@@ -20,6 +20,8 @@ export async function GET(
     }
 
     const { id } = params;
+    const { searchParams } = new URL(request.url);
+    const edit = searchParams.get("edit") === "true";
 
     // Check if id is a slug or UUID
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -29,8 +31,12 @@ export async function GET(
       .select(`
         *,
         seller:sellers(id, username, display_name, company_name, bio, avatar_url, website_url, twitter_url)
-      `)
-      .eq("is_published", true);
+      `);
+    
+    // Only filter by is_published if not in edit mode
+    if (!edit) {
+      query = query.eq("is_published", true);
+    }
 
     if (isUUID) {
       query = query.eq("id", id);

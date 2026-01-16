@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import { getPostBySlug, getAllPosts } from "@/lib/blog/posts";
+import { BlogPostJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
 
 interface BlogPostPageProps {
   params: { slug: string };
@@ -13,13 +17,43 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: BlogPostPageProps) {
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const post = getPostBySlug(params.slug);
   if (!post) return {};
 
+  const url = `${BASE_URL}/blog/${post.slug}`;
+
   return {
-    title: `${post.title} | SaaSマーケット`,
+    title: post.title,
     description: post.excerpt,
+    keywords: [...post.tags, post.category, "SaaS", "ビジネス", "日本"],
+    authors: [{ name: post.author.name }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url,
+      type: "article",
+      publishedTime: post.publishedAt,
+      authors: [post.author.name],
+      tags: post.tags,
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: ["/og-image.png"],
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 
@@ -32,6 +66,20 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <div className="py-16">
+      <BlogPostJsonLd
+        title={post.title}
+        description={post.excerpt}
+        url={`${BASE_URL}/blog/${post.slug}`}
+        datePublished={post.publishedAt}
+        authorName={post.author.name}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "ホーム", url: BASE_URL },
+          { name: "ブログ", url: `${BASE_URL}/blog` },
+          { name: post.title, url: `${BASE_URL}/blog/${post.slug}` },
+        ]}
+      />
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="mb-8">

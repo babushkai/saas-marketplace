@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { ImageUpload } from "@/components/common/ImageUpload";
 
 interface ProfileData {
   username: string;
@@ -132,19 +134,15 @@ export default function DashboardProfilePage() {
               {/* Avatar */}
               <div>
                 <label className="label">プロフィール画像</label>
-                <div className="flex items-center gap-6 mt-2">
-                  <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-3xl font-bold">
-                    {profile.display_name?.charAt(0) || "?"}
-                  </div>
-                  <div>
-                    <button type="button" className="btn btn-secondary text-sm" disabled>
-                      画像をアップロード (準備中)
-                    </button>
-                    <p className="text-xs text-gray-500 mt-2">
-                      推奨: 400x400px以上、JPG/PNG形式、最大2MB
-                    </p>
-                  </div>
-                </div>
+                <ImageUpload
+                  currentImage={profile.avatar_url}
+                  onUpload={(url) => setProfile({ ...profile, avatar_url: url })}
+                  type="avatar"
+                  size="md"
+                  shape="circle"
+                  placeholder={profile.display_name?.charAt(0) || "?"}
+                  className="mt-2"
+                />
               </div>
 
               {/* Username */}
@@ -275,8 +273,17 @@ export default function DashboardProfilePage() {
               プレビュー
             </h2>
             <div className="text-center">
-              <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-2xl font-bold mx-auto mb-4">
-                {profile.display_name?.charAt(0) || "?"}
+              <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-2xl font-bold mx-auto mb-4 overflow-hidden relative">
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.display_name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  profile.display_name?.charAt(0) || "?"
+                )}
               </div>
               <h3 className="font-semibold text-gray-900">
                 {profile.display_name || "表示名"}

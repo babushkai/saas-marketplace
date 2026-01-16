@@ -103,6 +103,8 @@ export async function POST(request: NextRequest) {
       price_info,
       website_url,
       is_published,
+      logo_url,
+      screenshots,
     } = body;
 
     // Validate required fields
@@ -185,8 +187,8 @@ export async function POST(request: NextRequest) {
         price_info: price_info || null,
         website_url: website_url || null,
         is_published: is_published ?? false,
-        screenshots: [],
-        logo_url: null,
+        screenshots: screenshots || [],
+        logo_url: logo_url || null,
       })
       .select()
       .single();

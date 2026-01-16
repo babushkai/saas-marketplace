@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { ImageUpload } from "@/components/common/ImageUpload";
 import type { PricingType } from "@/types/database";
 
 const categories = [
@@ -28,6 +30,8 @@ export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [screenshots, setScreenshots] = useState<string[]>([]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,6 +48,8 @@ export default function NewProductPage() {
       price_info: formData.get("price_info") as string || null,
       website_url: formData.get("website_url") as string || null,
       is_published: formData.get("is_published") === "true",
+      logo_url: logoUrl,
+      screenshots: screenshots,
     };
 
     try {
@@ -104,6 +110,19 @@ export default function NewProductPage() {
             </h2>
 
             <div className="space-y-4">
+              {/* Logo */}
+              <div>
+                <label className="label">ロゴ画像</label>
+                <ImageUpload
+                  currentImage={logoUrl}
+                  onUpload={(url) => setLogoUrl(url)}
+                  type="logo"
+                  size="md"
+                  shape="square"
+                  className="mt-2"
+                />
+              </div>
+
               <div>
                 <label htmlFor="name" className="label">
                   プロダクト名 <span className="text-red-500">*</span>
@@ -221,6 +240,48 @@ export default function NewProductPage() {
                   具体的な料金がある場合は記載してください
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Screenshots */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              スクリーンショット
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              プロダクトの画面イメージを最大5枚までアップロードできます
+            </p>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {screenshots.map((url, index) => (
+                <div key={index} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden group">
+                  <Image
+                    src={url}
+                    alt={`スクリーンショット ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setScreenshots(screenshots.filter((_, i) => i !== index))}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+              
+              {screenshots.length < 5 && (
+                <ImageUpload
+                  currentImage={null}
+                  onUpload={(url) => setScreenshots([...screenshots, url])}
+                  type="screenshot"
+                  size="lg"
+                  shape="square"
+                />
+              )}
             </div>
           </div>
 
