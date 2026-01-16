@@ -1,13 +1,74 @@
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
+import { createServerSupabaseClient } from "@/lib/supabase";
 
-export default function DashboardPage() {
-  // Mock stats - in production, fetch from Supabase
-  const stats = {
-    products: 2,
-    inquiries: 5,
-    unreadInquiries: 3,
-    views: 156,
+async function getDashboardStats() {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    return { products: 0, inquiries: 0, unreadInquiries: 0 };
+  }
+
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return { products: 0, inquiries: 0, unreadInquiries: 0 };
+  }
+
+  // Get seller ID
+  const { data: seller } = await supabase
+    .from("sellers")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .single();
+
+  if (!seller) {
+    return { products: 0, inquiries: 0, unreadInquiries: 0 };
+  }
+
+  // Get product count
+  const { count: productCount } = await supabase
+    .from("products")
+    .select("*", { count: "exact", head: true })
+    .eq("seller_id", seller.id)
+    .eq("is_published", true);
+
+  // Get products for inquiry count
+  const { data: products } = await supabase
+    .from("products")
+    .select("id")
+    .eq("seller_id", seller.id);
+
+  let inquiryCount = 0;
+  let unreadCount = 0;
+
+  if (products && products.length > 0) {
+    const productIds = products.map(p => p.id);
+    
+    const { count: totalInquiries } = await supabase
+      .from("inquiries")
+      .select("*", { count: "exact", head: true })
+      .in("product_id", productIds);
+
+    const { count: unreadInquiries } = await supabase
+      .from("inquiries")
+      .select("*", { count: "exact", head: true })
+      .in("product_id", productIds)
+      .eq("is_read", false);
+
+    inquiryCount = totalInquiries || 0;
+    unreadCount = unreadInquiries || 0;
+  }
+
+  return {
+    products: productCount || 0,
+    inquiries: inquiryCount,
+    unreadInquiries: unreadCount,
   };
+}
+
+export default async function DashboardPage() {
+  const stats = await getDashboardStats();
 
   return (
     <div>
@@ -19,7 +80,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div className="card p-6">
           <p className="text-sm text-gray-600">公開プロダクト数</p>
           <p className="text-3xl font-bold text-gray-900 mt-2">
@@ -37,10 +98,6 @@ export default function DashboardPage() {
           <p className="text-3xl font-bold text-primary-600 mt-2">
             {stats.unreadInquiries}
           </p>
-        </div>
-        <div className="card p-6">
-          <p className="text-sm text-gray-600">今月の閲覧数</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{stats.views}</p>
         </div>
       </div>
 

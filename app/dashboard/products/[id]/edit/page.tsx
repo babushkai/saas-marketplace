@@ -24,26 +24,6 @@ const pricingTypes: { id: PricingType; name: string; description: string }[] = [
   { id: "contact", name: "要問合せ", description: "料金は問い合わせ後に提示" },
 ];
 
-// Mock data - replace with actual API call
-const mockProduct: Product = {
-  id: "1",
-  seller_id: "seller-1",
-  slug: "cloud-invoice",
-  name: "クラウド請求書",
-  tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-  description:
-    "中小企業向けの請求書管理SaaS。\n\n## 主な機能\n- 請求書の作成・送付\n- 入金管理\n- 顧客管理\n- レポート機能",
-  category: "finance",
-  pricing_type: "freemium",
-  price_info: "¥980/月〜",
-  logo_url: null,
-  screenshots: [],
-  website_url: "https://example.com",
-  is_published: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
@@ -51,19 +31,22 @@ export default function EditProductPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    // TODO: Fetch product from API
     const fetchProduct = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setProduct(mockProduct);
+        const response = await fetch(`/api/products/${productId}`);
+        if (!response.ok) {
+          throw new Error("プロダクトの取得に失敗しました");
+        }
+        const data = await response.json();
+        setProduct(data.product);
       } catch (err) {
-        setError("プロダクトの取得に失敗しました");
+        setError(err instanceof Error ? err.message : "エラーが発生しました");
       } finally {
         setIsLoading(false);
       }
@@ -89,14 +72,46 @@ export default function EditProductPage() {
     };
 
     try {
-      // TODO: Implement API call
-      console.log("Update product:", productId, data);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "更新に失敗しました");
+      }
+
       router.push("/dashboard/products");
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("本当にこのプロダクトを削除しますか？この操作は取り消せません。")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "削除に失敗しました");
+      }
+
+      router.push("/dashboard/products");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -205,7 +220,7 @@ export default function EditProductPage() {
                   rows={8}
                   defaultValue={product.description}
                   className="input resize-none"
-                  placeholder="プロダクトの特徴、機能、利用シーンなどを詳しく記載してください。Markdown形式で記述できます。"
+                  placeholder="プロダクトの特徴、機能、利用シーンなどを詳しく記載してください。"
                 />
               </div>
 
@@ -277,9 +292,6 @@ export default function EditProductPage() {
                   className="input"
                   placeholder="例: ¥980/月〜、¥500/ユーザー/月"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  具体的な料金がある場合は記載してください
-                </p>
               </div>
             </div>
           </div>
@@ -372,8 +384,12 @@ export default function EditProductPage() {
             プロダクトを削除すると、すべてのデータが完全に削除されます。
             この操作は取り消せません。
           </p>
-          <button className="btn bg-red-600 text-white hover:bg-red-700">
-            プロダクトを削除
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="btn bg-red-600 text-white hover:bg-red-700"
+          >
+            {isDeleting ? "削除中..." : "プロダクトを削除"}
           </button>
         </div>
       </div>

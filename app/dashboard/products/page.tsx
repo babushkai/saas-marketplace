@@ -1,47 +1,52 @@
 import Link from "next/link";
 import Image from "next/image";
+import { auth } from "@clerk/nextjs/server";
 import { getPricingLabel, getPricingColor, formatDate } from "@/lib/utils";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
 
-// Mock data for development
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    seller_id: "seller-1",
-    slug: "cloud-invoice",
-    name: "クラウド請求書",
-    tagline: "請求書作成から入金管理まで、すべてをクラウドで完結",
-    description: "中小企業向けの請求書管理SaaS",
-    category: "finance",
-    pricing_type: "freemium",
-    price_info: "¥980/月〜",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    seller_id: "seller-1",
-    slug: "expense-tracker",
-    name: "経費精算くん",
-    tagline: "スマホで撮影するだけで経費精算が完了",
-    description: "OCRで領収書を自動読み取り",
-    category: "finance",
-    pricing_type: "paid",
-    price_info: "¥300/ユーザー/月",
-    logo_url: null,
-    screenshots: [],
-    website_url: "https://example.com",
-    is_published: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
+async function getSellerProducts(): Promise<Product[]> {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    return [];
+  }
 
-export default function ProductsManagementPage() {
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return [];
+  }
+
+  // Get seller ID
+  const { data: seller } = await supabase
+    .from("sellers")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .single();
+
+  if (!seller) {
+    return [];
+  }
+
+  // Get all products (published and unpublished)
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("seller_id", seller.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch products:", error);
+    return [];
+  }
+
+  return products || [];
+}
+
+export default async function ProductsManagementPage() {
+  const products = await getSellerProducts();
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -67,7 +72,7 @@ export default function ProductsManagementPage() {
         </Link>
       </div>
 
-      {mockProducts.length === 0 ? (
+      {products.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
@@ -117,7 +122,7 @@ export default function ProductsManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {mockProducts.map((product) => (
+              {products.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -200,7 +205,7 @@ export default function ProductsManagementPage() {
                         </svg>
                       </Link>
                       <Link
-                        href={`/dashboard/products/${product.id}`}
+                        href={`/dashboard/products/${product.id}/edit`}
                         className="p-2 text-gray-400 hover:text-primary-600"
                         title="編集"
                       >

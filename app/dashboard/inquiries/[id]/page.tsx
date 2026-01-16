@@ -4,54 +4,55 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
-// Mock data - replace with actual API call
-const mockInquiry = {
-  id: "1",
+interface InquiryData {
+  id: string;
   product: {
-    id: "1",
-    name: "クラウド請求書",
-    slug: "cloud-invoice",
-  },
-  sender_name: "佐藤 健太",
-  sender_email: "sato@example-corp.jp",
-  sender_company: "株式会社サンプル",
-  message: `お世話になっております。株式会社サンプルの佐藤と申します。
-
-貴社の「クラウド請求書」サービスについて、以下の点についてお伺いしたく、ご連絡させていただきました。
-
-1. 既存の会計ソフト（弥生会計）との連携は可能でしょうか？
-2. 現在50名程度の会社ですが、推奨のプランはどちらになりますでしょうか？
-3. 導入時のデータ移行サポートはありますでしょうか？
-4. 無料トライアル期間はありますでしょうか？
-
-お忙しいところ恐れ入りますが、ご回答いただけますと幸いです。
-
-何卒よろしくお願いいたします。`,
-  is_read: false,
-  created_at: "2024-01-15T10:30:00Z",
-};
+    id: string;
+    name: string;
+    slug: string;
+  };
+  sender_name: string;
+  sender_email: string;
+  sender_company: string | null;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
 
 export default function InquiryDetailPage() {
   const params = useParams();
   const inquiryId = params.id as string;
 
-  const [inquiry, setInquiry] = useState(mockInquiry);
+  const [inquiry, setInquiry] = useState<InquiryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
 
   useEffect(() => {
-    // TODO: Fetch inquiry from API
     const fetchInquiry = async () => {
       setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // Mark as read
-      setInquiry({ ...mockInquiry, is_read: true });
-      setIsLoading(false);
+      try {
+        // For now, we'll need to fetch from the inquiries list
+        // In a full implementation, you'd have a dedicated API endpoint
+        const response = await fetch(`/api/inquiries/${inquiryId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setInquiry(data.inquiry);
+        } else {
+          // Fallback: show error
+          setError("お問い合わせの取得に失敗しました");
+        }
+      } catch (err) {
+        setError("エラーが発生しました");
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchInquiry();
   }, [inquiryId]);
 
   const handleReply = () => {
+    if (!inquiry) return;
     const subject = encodeURIComponent(`Re: ${inquiry.product.name}についてのお問い合わせ`);
     const body = encodeURIComponent(replyMessage);
     window.location.href = `mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`;
@@ -75,6 +76,22 @@ export default function InquiryDetailPage() {
           <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">読み込み中...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error || !inquiry) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          お問い合わせが見つかりません
+        </h2>
+        <p className="text-gray-600 mb-4">
+          {error || "指定されたお問い合わせは存在しないか、削除されました。"}
+        </p>
+        <Link href="/dashboard/inquiries" className="btn btn-primary">
+          お問い合わせ一覧に戻る
+        </Link>
       </div>
     );
   }
@@ -219,25 +236,6 @@ export default function InquiryDetailPage() {
                 <p className="text-xs text-gray-500">プロダクトページを見る →</p>
               </div>
             </Link>
-          </div>
-
-          {/* Actions */}
-          <div className="card p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">アクション</h2>
-            <div className="space-y-3">
-              <button className="w-full btn btn-secondary text-sm justify-start">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
-                アーカイブする
-              </button>
-              <button className="w-full btn bg-red-50 text-red-600 hover:bg-red-100 text-sm justify-start">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                削除する
-              </button>
-            </div>
           </div>
         </div>
       </div>
