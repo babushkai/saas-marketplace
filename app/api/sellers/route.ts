@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/sellers - Get seller by username or current user's seller profile
 export async function GET(request: NextRequest) {
   try {

@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { slugify } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/products - Get all products with optional filters
 export async function GET(request: NextRequest) {
   try {
