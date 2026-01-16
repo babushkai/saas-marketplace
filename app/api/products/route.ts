@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("Failed to fetch products:", error);
       return NextResponse.json(
-        { error: "プロダクトの取得に失敗しました" },
+        { error: "プロダクトの取得に失敗しました", details: error.message },
         { status: 500 }
       );
     }
