@@ -1,94 +1,66 @@
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Inquiry, Product } from "@/types/database";
 
-// Mock data for development
-const mockInquiries: (Inquiry & { product: Product })[] = [
-  {
-    id: "1",
-    product_id: "1",
-    sender_name: "田中 一郎",
-    sender_email: "tanaka@example.com",
-    sender_company: "株式会社サンプル",
-    message:
-      "クラウド請求書について詳しく知りたいです。現在Excelで請求書管理をしていますが、月間100件程度の請求書があります。御社のサービスで対応可能でしょうか？",
-    is_read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    product: {
-      id: "1",
-      seller_id: "seller-1",
-      slug: "cloud-invoice",
-      name: "クラウド請求書",
-      tagline: "請求書作成から入金管理まで",
-      description: "",
-      category: "finance",
-      pricing_type: "freemium",
-      price_info: null,
-      logo_url: null,
-      screenshots: [],
-      website_url: null,
-      is_published: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  },
-  {
-    id: "2",
-    product_id: "1",
-    sender_name: "佐藤 花子",
-    sender_email: "sato@example.co.jp",
-    sender_company: "サトウ商事",
-    message: "デモを見せていただけますか？来週の火曜日か水曜日で可能でしょうか。",
-    is_read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    product: {
-      id: "1",
-      seller_id: "seller-1",
-      slug: "cloud-invoice",
-      name: "クラウド請求書",
-      tagline: "請求書作成から入金管理まで",
-      description: "",
-      category: "finance",
-      pricing_type: "freemium",
-      price_info: null,
-      logo_url: null,
-      screenshots: [],
-      website_url: null,
-      is_published: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  },
-  {
-    id: "3",
-    product_id: "2",
-    sender_name: "山本 太郎",
-    sender_email: "yamamoto@startup.io",
-    sender_company: "スタートアップ株式会社",
-    message: "経費精算くんの導入を検討しています。50名規模の会社ですが、初期費用はかかりますか？",
-    is_read: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    product: {
-      id: "2",
-      seller_id: "seller-1",
-      slug: "expense-tracker",
-      name: "経費精算くん",
-      tagline: "スマホで撮影するだけで経費精算",
-      description: "",
-      category: "finance",
-      pricing_type: "paid",
-      price_info: null,
-      logo_url: null,
-      screenshots: [],
-      website_url: null,
-      is_published: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  },
-];
+async function getInquiries(): Promise<(Inquiry & { product: Product })[]> {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    return [];
+  }
 
-export default function InquiriesPage() {
-  const unreadCount = mockInquiries.filter((i) => !i.is_read).length;
+  const supabase = createServerSupabaseClient();
+  
+  if (!supabase) {
+    return [];
+  }
+
+  // Get seller ID for current user
+  const { data: seller } = await supabase
+    .from("sellers")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .single();
+
+  if (!seller) {
+    return [];
+  }
+
+  // Get seller's products first
+  const { data: products } = await supabase
+    .from("products")
+    .select("id")
+    .eq("seller_id", seller.id);
+  
+  if (!products || products.length === 0) {
+    return [];
+  }
+
+  const productIds = products.map(p => p.id);
+
+  // Get inquiries for seller's products
+  const { data: inquiries, error } = await supabase
+    .from("inquiries")
+    .select(`
+      *,
+      product:products(*)
+    `)
+    .in("product_id", productIds)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch inquiries:", error);
+    return [];
+  }
+
+  return (inquiries || []) as (Inquiry & { product: Product })[];
+}
+
+export default async function InquiriesPage() {
+  const inquiries = await getInquiries();
+  const unreadCount = inquiries.filter((i) => !i.is_read).length;
 
   return (
     <div>
@@ -104,7 +76,7 @@ export default function InquiriesPage() {
         </p>
       </div>
 
-      {mockInquiries.length === 0 ? (
+      {inquiries.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
@@ -130,7 +102,7 @@ export default function InquiriesPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {mockInquiries.map((inquiry) => (
+          {inquiries.map((inquiry) => (
             <div
               key={inquiry.id}
               className={`card p-6 ${!inquiry.is_read ? "border-l-4 border-l-primary-500" : ""}`}
