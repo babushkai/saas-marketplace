@@ -23,12 +23,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    // Simple query first - no joins
     let query = supabase
       .from("products")
-      .select(`
-        *,
-        seller:sellers(id, username, display_name, avatar_url)
-      `)
+      .select("*")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -55,16 +53,17 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("Failed to fetch products:", error);
       return NextResponse.json(
-        { error: "プロダクトの取得に失敗しました", details: error.message },
+        { error: "プロダクトの取得に失敗しました", details: error.message, code: error.code },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ products });
+    return NextResponse.json({ products: products || [] });
   } catch (error) {
     console.error("Products API error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
+      { error: "サーバーエラーが発生しました", details: message },
       { status: 500 }
     );
   }
