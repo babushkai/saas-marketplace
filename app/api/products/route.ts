@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     
     if (!supabase) {
       return NextResponse.json(
-        { error: "データベースが設定されていません" },
+        { error: "データベースが設定されていません", debug: "supabase_null" },
         { status: 503 }
       );
     }
@@ -25,47 +25,57 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    // Simple query first - no joins
-    let query = supabase
+    // Simple query - no joins
+    const { data: products, error } = await supabase
       .from("products")
       .select("*")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (category) {
-      query = query.eq("category", category);
-    }
-
-    if (pricing) {
-      const pricingTypes = pricing.split(",");
-      query = query.in("pricing_type", pricingTypes);
-    }
-
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,tagline.ilike.%${search}%,description.ilike.%${search}%`);
-    }
-
-    if (seller_id) {
-      query = query.eq("seller_id", seller_id);
-    }
-
-    const { data: products, error } = await query;
-
     if (error) {
-      console.error("Failed to fetch products:", error);
       return NextResponse.json(
-        { error: "プロダクトの取得に失敗しました", details: error.message, code: error.code },
+        { 
+          error: "プロダクトの取得に失敗しました", 
+          details: error.message, 
+          code: error.code,
+          hint: error.hint 
+        },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ products: products || [] });
+    // Apply filters in memory if needed (simpler approach)
+    let filtered = products || [];
+    
+    if (category) {
+      filtered = filtered.filter(p => p.category === category);
+    }
+    
+    if (pricing) {
+      const pricingTypes = pricing.split(",");
+      filtered = filtered.filter(p => pricingTypes.includes(p.pricing_type));
+    }
+    
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name?.toLowerCase().includes(searchLower) ||
+        p.tagline?.toLowerCase().includes(searchLower) ||
+        p.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (seller_id) {
+      filtered = filtered.filter(p => p.seller_id === seller_id);
+    }
+
+    return NextResponse.json({ products: filtered });
   } catch (error) {
-    console.error("Products API error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
+    const stack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(
-      { error: "サーバーエラーが発生しました", details: message },
+      { error: "サーバーエラーが発生しました", details: message, stack },
       { status: 500 }
     );
   }
