@@ -52,6 +52,14 @@ export function Footer() {
                   料金プラン
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  ブログ
+                </Link>
+              </li>
             </ul>
           </div>
 
