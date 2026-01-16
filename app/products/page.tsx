@@ -1,6 +1,26 @@
+import { Metadata } from "next";
 import { ProductCard } from "@/components/products/ProductCard";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
+
+export const metadata: Metadata = {
+  title: "プロダクト一覧 - SaaS製品を探す",
+  description:
+    "日本発のSaaS製品・サービスを一覧で検索。マーケティング、営業CRM、経理、人事、業務効率化など、カテゴリー別にビジネスツールを比較できます。",
+  keywords: [
+    "SaaS一覧",
+    "SaaS製品",
+    "ビジネスツール",
+    "クラウドサービス",
+    "業務効率化ツール",
+    "日本SaaS",
+  ],
+  openGraph: {
+    title: "プロダクト一覧 - SaaS製品を探す | SaaSマーケット",
+    description:
+      "日本発のSaaS製品・サービスを一覧で検索。カテゴリー別にビジネスツールを比較できます。",
+  },
+};
 
 const categories = [
   { id: "all", name: "すべて" },

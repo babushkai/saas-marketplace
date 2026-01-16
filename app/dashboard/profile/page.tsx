@@ -160,7 +160,7 @@ export default function DashboardProfilePage() {
                       setProfile({ ...profile, username: e.target.value })
                     }
                     className="input flex-1"
-                    pattern="[a-z0-9-]+"
+                    pattern="[a-z0-9\-]+"
                     required
                   />
                 </div>

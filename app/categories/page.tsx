@@ -1,4 +1,25 @@
+import { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "カテゴリー一覧 - SaaSをカテゴリーから探す",
+  description:
+    "マーケティング、営業・CRM、経理・財務、人事・労務、業務効率化、コミュニケーション、開発、デザインなど、9つのカテゴリーからSaaS製品を探せます。",
+  keywords: [
+    "SaaSカテゴリー",
+    "マーケティングツール",
+    "CRMツール",
+    "経理ソフト",
+    "人事システム",
+    "業務効率化",
+    "ビジネスチャット",
+  ],
+  openGraph: {
+    title: "カテゴリー一覧 - SaaSをカテゴリーから探す | SaaSマーケット",
+    description:
+      "9つのカテゴリーからSaaS製品を探せます。あなたのビジネスに最適なツールを見つけましょう。",
+  },
+};
 
 const categories = [
   {
