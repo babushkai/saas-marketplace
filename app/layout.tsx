@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { jaJP } from "@clerk/localizations";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
 
@@ -49,21 +52,12 @@ export const metadata: Metadata = {
     title: "SaaSマーケット | 日本のSaaS・サービスを見つけよう",
     description:
       "日本発のSaaS製品・サービスを探せるマーケットプレイス。500以上のSaaSツールから、あなたのビジネスに最適なツールを見つけましょう。",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "SaaSマーケット - 日本のSaaS・サービスを見つけよう",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "SaaSマーケット | 日本のSaaS・サービスを見つけよう",
     description:
       "日本発のSaaS製品・サービスを探せるマーケットプレイス。500以上のSaaSツールから、あなたのビジネスに最適なツールを見つけましょう。",
-    images: ["/og-image.png"],
     creator: "@saas_market_jp",
   },
   robots: {
@@ -104,6 +98,9 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <Analytics />
+        <SpeedInsights />
+        <GoogleAnalytics />
       </body>
     </html>
   );
