@@ -1,20 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useClerk } from "@clerk/nextjs";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("notifications");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const [profile, setProfile] = useState({
-    name: "山田 太郎",
-    email: "yamada@example.com",
-    company: "株式会社サンプル",
-    bio: "SaaSプロダクトの開発・提供を行っています。",
-    website: "https://example.com",
-    twitter: "@yamada",
-  });
+  const { openUserProfile } = useClerk();
 
   const [notifications, setNotifications] = useState({
     emailInquiries: true,
@@ -23,28 +17,17 @@ export default function SettingsPage() {
     browserNotifications: true,
   });
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // TODO: Implement profile update
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setSuccessMessage("プロフィールを更新しました");
-    setTimeout(() => setSuccessMessage(null), 3000);
-  };
-
   const handleNotificationsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement notifications update
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // TODO: Save to database when notifications table is added
+    await new Promise((resolve) => setTimeout(resolve, 500));
     setIsLoading(false);
     setSuccessMessage("通知設定を更新しました");
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   const tabs = [
-    { id: "profile", name: "プロフィール" },
     { id: "notifications", name: "通知設定" },
     { id: "billing", name: "請求・プラン" },
     { id: "security", name: "セキュリティ" },
@@ -56,6 +39,13 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold text-gray-900">設定</h1>
         <p className="text-gray-600 mt-1">
           アカウントの設定や通知の管理ができます
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          出品者プロフィールの編集は{" "}
+          <Link href="/dashboard/profile" className="text-primary-600 hover:underline">
+            プロフィールページ
+          </Link>
+          {" "}から行えます
         </p>
       </div>
 
@@ -83,143 +73,6 @@ export default function SettingsPage() {
           ))}
         </nav>
       </div>
-
-      {/* Profile Tab */}
-      {activeTab === "profile" && (
-        <form onSubmit={handleProfileSubmit} className="max-w-2xl">
-          <div className="card p-6 space-y-6">
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-10 h-10 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <button type="button" className="btn btn-secondary text-sm">
-                  画像を変更
-                </button>
-                <p className="text-xs text-gray-500 mt-1">
-                  JPG, PNG, GIF (最大2MB)
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="label">
-                  お名前
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={profile.name}
-                  onChange={(e) =>
-                    setProfile({ ...profile, name: e.target.value })
-                  }
-                  className="input"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="label">
-                  メールアドレス
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) =>
-                    setProfile({ ...profile, email: e.target.value })
-                  }
-                  className="input"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="company" className="label">
-                会社名
-              </label>
-              <input
-                id="company"
-                type="text"
-                value={profile.company}
-                onChange={(e) =>
-                  setProfile({ ...profile, company: e.target.value })
-                }
-                className="input"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="bio" className="label">
-                自己紹介
-              </label>
-              <textarea
-                id="bio"
-                rows={3}
-                value={profile.bio}
-                onChange={(e) =>
-                  setProfile({ ...profile, bio: e.target.value })
-                }
-                className="input resize-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="website" className="label">
-                  ウェブサイト
-                </label>
-                <input
-                  id="website"
-                  type="url"
-                  value={profile.website}
-                  onChange={(e) =>
-                    setProfile({ ...profile, website: e.target.value })
-                  }
-                  className="input"
-                  placeholder="https://"
-                />
-              </div>
-              <div>
-                <label htmlFor="twitter" className="label">
-                  Twitter
-                </label>
-                <input
-                  id="twitter"
-                  type="text"
-                  value={profile.twitter}
-                  onChange={(e) =>
-                    setProfile({ ...profile, twitter: e.target.value })
-                  }
-                  className="input"
-                  placeholder="@username"
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn btn-primary"
-              >
-                {isLoading ? "保存中..." : "変更を保存"}
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
 
       {/* Notifications Tab */}
       {activeTab === "notifications" && (
@@ -340,38 +193,21 @@ export default function SettingsPage() {
           <div className="card p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">現在のプラン</h3>
-              <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">
-                スタンダード
+              <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
+                無料プラン
               </span>
             </div>
             <p className="text-gray-600 mb-4">
-              5プロダクトまで掲載可能、無制限のPV
+              現在は無料プランをご利用中です。すべての機能をお試しいただけます。
             </p>
             <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-bold text-gray-900">¥4,980</span>
+              <span className="text-3xl font-bold text-gray-900">¥0</span>
               <span className="text-gray-600">/月</span>
             </div>
-            <div className="flex gap-3">
-              <button className="btn btn-primary">プランを変更</button>
-              <button className="btn btn-secondary">請求履歴を見る</button>
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              支払い方法
-            </h3>
-            <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
-              <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center">
-                <span className="text-xs font-medium text-gray-600">VISA</span>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">**** **** **** 4242</p>
-                <p className="text-sm text-gray-500">有効期限: 12/26</p>
-              </div>
-              <button className="ml-auto text-sm text-primary-600 hover:text-primary-700">
-                変更
-              </button>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                有料プランは近日公開予定です。より多くのプロダクト掲載や詳細なアナリティクス機能をご利用いただけるようになります。
+              </p>
             </div>
           </div>
         </div>
@@ -382,47 +218,43 @@ export default function SettingsPage() {
         <div className="max-w-2xl space-y-6">
           <div className="card p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              パスワードの変更
+              アカウントセキュリティ
             </h3>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="current-password" className="label">
-                  現在のパスワード
-                </label>
-                <input
-                  id="current-password"
-                  type="password"
-                  className="input"
-                />
-              </div>
-              <div>
-                <label htmlFor="new-password" className="label">
-                  新しいパスワード
-                </label>
-                <input id="new-password" type="password" className="input" />
-              </div>
-              <div>
-                <label htmlFor="confirm-password" className="label">
-                  新しいパスワード（確認）
-                </label>
-                <input
-                  id="confirm-password"
-                  type="password"
-                  className="input"
-                />
-              </div>
-              <button className="btn btn-primary">パスワードを変更</button>
-            </div>
+            <p className="text-gray-600 mb-4">
+              パスワードの変更、二要素認証の設定、その他のセキュリティ設定はClerkアカウント管理から行えます。
+            </p>
+            <button
+              onClick={() => openUserProfile()}
+              className="btn btn-primary"
+            >
+              アカウント設定を開く
+            </button>
           </div>
 
           <div className="card p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              二要素認証
+              セキュリティのヒント
             </h3>
-            <p className="text-gray-600 mb-4">
-              二要素認証を有効にして、アカウントのセキュリティを強化しましょう。
-            </p>
-            <button className="btn btn-secondary">二要素認証を設定</button>
+            <ul className="space-y-3 text-sm text-gray-600">
+              <li className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>強力なパスワードを使用してください（12文字以上推奨）</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>二要素認証を有効にしてアカウントを保護しましょう</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>他のサービスと同じパスワードを使い回さないでください</span>
+              </li>
+            </ul>
           </div>
 
           <div className="card p-6 border-red-200">
@@ -433,8 +265,11 @@ export default function SettingsPage() {
               アカウントを削除すると、すべてのデータが完全に削除されます。
               この操作は取り消せません。
             </p>
-            <button className="btn bg-red-600 text-white hover:bg-red-700">
-              アカウントを削除
+            <button
+              onClick={() => openUserProfile()}
+              className="btn bg-red-600 text-white hover:bg-red-700"
+            >
+              アカウント管理へ
             </button>
           </div>
         </div>
