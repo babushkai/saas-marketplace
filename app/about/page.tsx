@@ -1,46 +1,30 @@
 import Link from "next/link";
 
-const stats = [
-  { label: "掲載プロダクト数", value: "500+" },
-  { label: "月間訪問者数", value: "50,000+" },
-  { label: "登録企業数", value: "1,200+" },
-  { label: "問い合わせ成約率", value: "23%" },
-];
-
-const team = [
-  {
-    name: "田中 太郎",
-    role: "代表取締役 / CEO",
-    bio: "元大手IT企業のプロダクトマネージャー。日本のSaaS市場の可能性を信じ、2023年に創業。",
-  },
-  {
-    name: "佐藤 花子",
-    role: "CTO",
-    bio: "フルスタックエンジニア。複数のスタートアップでテックリードを経験後、創業メンバーとして参画。",
-  },
-  {
-    name: "鈴木 一郎",
-    role: "COO",
-    bio: "大手コンサルティングファーム出身。B2Bマーケティングとセールスのエキスパート。",
-  },
-];
-
 const values = [
   {
-    title: "日本発のイノベーションを世界へ",
+    title: "オープンソース",
     description:
-      "日本には素晴らしいSaaS製品がたくさんあります。私たちはそれらを国内外に広め、日本のテック産業の発展に貢献します。",
+      "このプロジェクトはオープンソースで開発されています。誰でもコードを見て、貢献し、フォークすることができます。透明性と協力を大切にしています。",
   },
   {
-    title: "透明性と信頼",
+    title: "コミュニティドリブン",
     description:
-      "すべてのプロダクト情報は正確で透明性があります。ユーザーが安心して意思決定できる環境を提供します。",
+      "SaaS開発者とユーザーのコミュニティによって成長するプラットフォーム。皆さんのフィードバックと貢献がこのプロジェクトを形作ります。",
   },
   {
-    title: "コミュニティファースト",
+    title: "日本のSaaSを世界へ",
     description:
-      "SaaS開発者とユーザーのコミュニティを大切にし、双方にとって価値のあるプラットフォームを目指します。",
+      "日本には素晴らしいSaaS製品がたくさんあります。それらを発見しやすく、世界に発信できるプラットフォームを目指しています。",
   },
+];
+
+const techStack = [
+  { name: "Next.js 14", description: "App Router & React Server Components" },
+  { name: "TypeScript", description: "型安全な開発" },
+  { name: "Tailwind CSS", description: "ユーティリティファーストCSS" },
+  { name: "Supabase", description: "PostgreSQL & Storage" },
+  { name: "Clerk", description: "認証・ユーザー管理" },
+  { name: "Vercel", description: "ホスティング & デプロイ" },
 ];
 
 export default function AboutPage() {
@@ -50,51 +34,77 @@ export default function AboutPage() {
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            日本のSaaSエコシステムを
+            オープンソースの
             <br />
-            もっと活発に
+            B2B SaaSマーケットプレイス
           </h1>
-          <p className="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto">
-            私たちは、日本発のSaaS製品と、それを必要とする企業をつなぐ
-            マーケットプレイスを運営しています。
+          <p className="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto mb-8">
+            日本発のSaaS製品と、それを必要とする企業をつなぐ
+            オープンソースプラットフォームです。
           </p>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-12 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary-600">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600 mt-1">{stat.label}</div>
-              </div>
-            ))}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://github.com/babushkai/saas-marketplace"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn bg-white text-primary-700 hover:bg-gray-100 inline-flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+              </svg>
+              GitHub で見る
+            </a>
+            <Link href="/products" className="btn bg-white/10 text-white border border-white/30 hover:bg-white/20">
+              プロダクトを探す
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Mission */}
-      <section className="py-16">
+      {/* Founder */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              私たちのミッション
-            </h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              日本には、世界に誇れる素晴らしいSaaS製品がたくさん生まれています。
-              しかし、それらを見つけることは簡単ではありません。
-              私たちは、日本のSaaS市場をもっとオープンで活発なものにするため、
-              プロダクトと企業をつなぐプラットフォームを構築しています。
-              <br />
-              <br />
-              出品者には、自社製品をアピールする場を。
-              購入者には、最適なツールを見つける手段を。
-              両者にとって価値のあるマーケットプレイスを目指しています。
-            </p>
+          <div className="max-w-3xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="w-32 h-32 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-4xl font-bold flex-shrink-0">
+                桑
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  桑原 大将
+                  <span className="text-gray-500 text-lg font-normal ml-2">/ Babushkai</span>
+                </h2>
+                <p className="text-primary-600 mb-4">Founder & Developer</p>
+                <p className="text-gray-600 leading-relaxed">
+                  日本のB2B SaaS市場をもっとオープンで活発にしたいという思いから、
+                  このプロジェクトを立ち上げました。
+                  オープンソースで開発することで、コミュニティの力を借りながら
+                  より良いプラットフォームを作っていきたいと考えています。
+                </p>
+                <div className="flex gap-4 mt-4">
+                  <a
+                    href="https://github.com/babushkai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://twitter.com/babushkai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -103,7 +113,7 @@ export default function AboutPage() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            私たちの価値観
+            プロジェクトの理念
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {values.map((value) => (
@@ -118,23 +128,57 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* Tech Stack */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            チーム
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-4">
+            技術スタック
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {team.map((member) => (
-              <div key={member.name} className="text-center">
-                <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {member.name}
-                </h3>
-                <p className="text-primary-600 text-sm mb-2">{member.role}</p>
-                <p className="text-gray-600 text-sm">{member.bio}</p>
+          <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+            モダンなフルスタック技術で構築されています。
+            すべてのコードはGitHubで公開しています。
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
+            {techStack.map((tech) => (
+              <div key={tech.name} className="card p-4 text-center">
+                <h3 className="font-semibold text-gray-900 mb-1">{tech.name}</h3>
+                <p className="text-xs text-gray-500">{tech.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contributing */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              コントリビュート歓迎
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed mb-8">
+              バグ報告、機能リクエスト、プルリクエストなど、
+              どんな形での貢献も大歓迎です。
+              一緒に日本のSaaSエコシステムを盛り上げましょう！
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="https://github.com/babushkai/saas-marketplace/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary"
+              >
+                Issue を報告
+              </a>
+              <a
+                href="https://github.com/babushkai/saas-marketplace/pulls"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+              >
+                PR を送る
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -142,13 +186,14 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="py-16 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4">一緒に働きませんか？</h2>
+          <h2 className="text-3xl font-bold mb-4">プロダクトを掲載しませんか？</h2>
           <p className="text-gray-300 mb-8 max-w-xl mx-auto">
-            私たちは、日本のSaaS市場を変革する仲間を探しています。
+            あなたのSaaSプロダクトを無料で掲載できます。
+            日本のB2B市場にリーチしましょう。
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/careers" className="btn btn-primary">
-              採用情報を見る
+            <Link href="/dashboard/products/new" className="btn btn-primary">
+              プロダクトを掲載する
             </Link>
             <Link
               href="/contact"
