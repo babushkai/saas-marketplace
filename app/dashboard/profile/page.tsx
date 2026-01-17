@@ -91,6 +91,19 @@ export default function DashboardProfilePage() {
         throw new Error(data.error || "更新に失敗しました");
       }
 
+      // Sync local state with the saved data from database
+      if (data.seller) {
+        setProfile({
+          username: data.seller.username || "",
+          display_name: data.seller.display_name || "",
+          company_name: data.seller.company_name || "",
+          bio: data.seller.bio || "",
+          avatar_url: data.seller.avatar_url || "",
+          website_url: data.seller.website_url || "",
+          twitter_url: data.seller.twitter_url || "",
+        });
+      }
+
       setSuccessMessage("プロフィールを更新しました");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
