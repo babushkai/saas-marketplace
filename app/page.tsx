@@ -3,6 +3,8 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+
 const categories = [
   { id: "marketing", name: "マーケティング" },
   { id: "sales", name: "営業・CRM" },
