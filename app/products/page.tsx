@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
   title: "プロダクト一覧 - SaaS製品を探す",
