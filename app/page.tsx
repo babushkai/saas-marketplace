@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const categories = [
   { id: "marketing", name: "マーケティング" },
