@@ -30,6 +30,9 @@ const categories = [
   { id: "hr", name: "人事・労務" },
   { id: "productivity", name: "業務効率化" },
   { id: "communication", name: "コミュニケーション" },
+  { id: "development", name: "開発・エンジニアリング" },
+  { id: "design", name: "デザイン" },
+  { id: "other", name: "その他" },
 ];
 
 interface ProductsPageProps {
