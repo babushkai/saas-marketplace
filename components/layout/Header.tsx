@@ -98,7 +98,7 @@ export function Header() {
                         href="/dashboard"
                         className="btn btn-primary text-sm"
                       >
-                        ダッシュボード
+                        出品者ページ
                       </Link>
                       <UserButton
                         afterSignOutUrl="/"
