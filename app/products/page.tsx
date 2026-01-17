@@ -3,6 +3,8 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "プロダクト一覧 - SaaS製品を探す",
   description:
