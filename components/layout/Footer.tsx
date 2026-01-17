@@ -110,14 +110,6 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/careers"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  採用情報
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/contact"
                   className="text-sm text-gray-600 hover:text-gray-900"
                 >
