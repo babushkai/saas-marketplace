@@ -142,7 +142,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Check if username is taken by another user
+    // Check if username is taken by another user, or if current user already has this username
+    let existingSellerWithUsername = null;
     if (username) {
       const { data: existingSeller } = await supabase
         .from("sellers")
@@ -156,16 +157,28 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      // If current user already has a record with this username, use it
+      if (existingSeller && existingSeller.clerk_user_id === userId) {
+        existingSellerWithUsername = existingSeller;
+      }
     }
 
-    // Check if seller exists - get the most recently updated one
-    const { data: existingProfile } = await supabase
-      .from("sellers")
-      .select("id")
-      .eq("clerk_user_id", userId)
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .single();
+    // If user already has a record with the target username, update that record
+    // Otherwise, get the most recently updated record for this user
+    let existingProfile = existingSellerWithUsername;
+
+    if (!existingProfile) {
+      const { data: recentProfile } = await supabase
+        .from("sellers")
+        .select("id")
+        .eq("clerk_user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      existingProfile = recentProfile;
+    }
 
     let seller;
     let error;
