@@ -96,7 +96,7 @@ export function Header() {
                     <SignedIn>
                       <Link
                         href="/dashboard"
-                        className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                        className="btn btn-primary text-sm"
                       >
                         ダッシュボード
                       </Link>
