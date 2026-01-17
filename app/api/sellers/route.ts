@@ -171,7 +171,7 @@ export async function PUT(request: NextRequest) {
     if (!existingProfile) {
       const { data: recentProfile } = await supabase
         .from("sellers")
-        .select("id")
+        .select("id, clerk_user_id")
         .eq("clerk_user_id", userId)
         .order("updated_at", { ascending: false })
         .limit(1)
