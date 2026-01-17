@@ -18,6 +18,7 @@ CREATE TABLE sellers (
   avatar_url TEXT,
   website_url TEXT,
   twitter_url TEXT,
+  is_verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -37,6 +38,7 @@ CREATE TABLE products (
   screenshots JSONB DEFAULT '[]'::jsonb,
   website_url TEXT,
   is_published BOOLEAN DEFAULT FALSE,
+  is_verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
