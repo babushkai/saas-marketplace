@@ -19,7 +19,7 @@ INSERT INTO sellers (
   'dsuke',
   NULL,
   'RAG開発ツールの情報を整理・発信しています',
-  NULL,
+  'https://ui-avatars.com/api/?name=dsuke&background=3b82f6&color=fff&size=200&bold=true',
   'https://rag-catalog.vercel.app',
   NULL
 ) ON CONFLICT (id) DO NOTHING;
@@ -69,8 +69,19 @@ Next.js 14 / TypeScript / Tailwind CSS / Vercel',
   'development',
   'free',
   '無料で利用可能',
-  NULL,
+  'https://ui-avatars.com/api/?name=RAG&background=18181b&color=f4f4f5&size=200&bold=true&font-size=0.4',
   '[]'::jsonb,
   'https://rag-catalog.vercel.app',
   true
 ) ON CONFLICT (id) DO NOTHING;
+
+-- UPDATE statements (run these if records already exist)
+-- Update seller avatar
+UPDATE sellers
+SET avatar_url = 'https://ui-avatars.com/api/?name=dsuke&background=3b82f6&color=fff&size=200&bold=true'
+WHERE username = 'dsuke';
+
+-- Update product logo
+UPDATE products
+SET logo_url = 'https://ui-avatars.com/api/?name=RAG&background=18181b&color=f4f4f5&size=200&bold=true&font-size=0.4'
+WHERE slug = 'rag-catalog';
