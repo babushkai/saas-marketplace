@@ -70,7 +70,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     src={product.logo_url}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-gray-400">
@@ -186,6 +187,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     alt={seller.display_name}
                     fill
                     className="object-cover"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-400">

@@ -65,6 +65,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
                 alt={seller.display_name}
                 fill
                 className="object-cover"
+                unoptimized
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-gray-400">

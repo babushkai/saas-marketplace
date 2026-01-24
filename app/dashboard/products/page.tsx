@@ -132,7 +132,8 @@ export default async function ProductsManagementPage() {
                             src={product.logo_url}
                             alt={product.name}
                             fill
-                            className="object-cover"
+                            className="object-contain"
+                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-sm font-bold text-gray-400">
