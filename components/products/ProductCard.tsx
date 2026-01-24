@@ -18,7 +18,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 src={product.logo_url}
                 alt={product.name}
                 fill
-                className="object-cover"
+                className="object-contain"
+                unoptimized
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
