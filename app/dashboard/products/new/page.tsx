@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ImageUpload } from "@/components/common/ImageUpload";
+import { FormField, TextareaField, SelectField } from "@/components/ui/FormField";
+import { useToast } from "@/components/ui/Toast";
 import type { PricingType } from "@/types/database";
 
 const categories = [
@@ -26,27 +28,78 @@ const pricingTypes: { id: PricingType; name: string; description: string }[] = [
   { id: "contact", name: "要問合せ", description: "料金は問い合わせ後に提示" },
 ];
 
+// Validation functions
+const validateUrl = (value: string): string | null => {
+  if (!value) return null;
+  try {
+    new URL(value);
+    return null;
+  } catch {
+    return "有効なURLを入力してください";
+  }
+};
+
+const validateTagline = (value: string): string | null => {
+  if (value.length > 100) {
+    return "100文字以内で入力してください";
+  }
+  return null;
+};
+
 export default function NewProductPage() {
   const router = useRouter();
+  const { showToast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [screenshots, setScreenshots] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setFieldErrors({});
 
     const formData = new FormData(e.currentTarget);
+
+    // Validate required fields
+    const errors: Record<string, string> = {};
+    const name = formData.get("name") as string;
+    const tagline = formData.get("tagline") as string;
+    const description = formData.get("description") as string;
+    const category = formData.get("category") as string;
+    const pricingType = formData.get("pricing_type") as string;
+    const websiteUrl = formData.get("website_url") as string;
+
+    if (!name?.trim()) errors.name = "プロダクト名は必須です";
+    if (!tagline?.trim()) errors.tagline = "キャッチコピーは必須です";
+    if (tagline && tagline.length > 100) errors.tagline = "100文字以内で入力してください";
+    if (!description?.trim()) errors.description = "詳細説明は必須です";
+    if (!category) errors.category = "カテゴリーを選択してください";
+    if (!pricingType) errors.pricing_type = "料金タイプを選択してください";
+    if (websiteUrl && validateUrl(websiteUrl)) errors.website_url = "有効なURLを入力してください";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setIsSubmitting(false);
+      showToast("入力内容に誤りがあります", "error");
+      // Scroll to first error
+      const firstErrorField = Object.keys(errors)[0];
+      const element = document.getElementById(firstErrorField);
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     const data = {
-      name: formData.get("name") as string,
-      tagline: formData.get("tagline") as string,
-      description: formData.get("description") as string,
-      category: formData.get("category") as string,
-      pricing_type: formData.get("pricing_type") as PricingType,
+      name: name,
+      tagline: tagline,
+      description: description,
+      category: category,
+      pricing_type: pricingType as PricingType,
       price_info: formData.get("price_info") as string || null,
-      website_url: formData.get("website_url") as string || null,
+      website_url: websiteUrl || null,
       is_published: formData.get("is_published") === "true",
       logo_url: logoUrl,
       screenshots: screenshots,
@@ -63,9 +116,11 @@ export default function NewProductPage() {
         throw new Error("プロダクトの作成に失敗しました");
       }
 
+      showToast("プロダクトを作成しました", "success");
       router.push("/dashboard/products");
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
+      showToast("プロダクトの作成に失敗しました", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +156,7 @@ export default function NewProductPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl">
+      <form ref={formRef} onSubmit={handleSubmit} className="max-w-2xl" noValidate>
         <div className="card p-6 space-y-6">
           {/* Basic Info */}
           <div>
@@ -123,70 +178,46 @@ export default function NewProductPage() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="name" className="label">
-                  プロダクト名 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  className="input"
-                  placeholder="例: クラウド請求書"
-                />
-              </div>
+              <FormField
+                id="name"
+                name="name"
+                label="プロダクト名"
+                required
+                placeholder="例: クラウド請求書"
+                error={fieldErrors.name}
+              />
 
-              <div>
-                <label htmlFor="tagline" className="label">
-                  キャッチコピー <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="tagline"
-                  name="tagline"
-                  required
-                  className="input"
-                  placeholder="例: 請求書作成から入金管理まで、すべてをクラウドで完結"
-                  maxLength={100}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  100文字以内で簡潔に
-                </p>
-              </div>
+              <FormField
+                id="tagline"
+                name="tagline"
+                label="キャッチコピー"
+                required
+                placeholder="例: 請求書作成から入金管理まで、すべてをクラウドで完結"
+                maxLength={100}
+                hint="100文字以内で簡潔に"
+                validate={validateTagline}
+                error={fieldErrors.tagline}
+              />
 
-              <div>
-                <label htmlFor="description" className="label">
-                  詳細説明 <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  required
-                  rows={8}
-                  className="input resize-none"
-                  placeholder="プロダクトの特徴、機能、利用シーンなどを詳しく記載してください。Markdown形式で記述できます。"
-                />
-              </div>
+              <TextareaField
+                id="description"
+                name="description"
+                label="詳細説明"
+                required
+                rows={8}
+                placeholder="プロダクトの特徴、機能、利用シーンなどを詳しく記載してください。Markdown形式で記述できます。"
+                error={fieldErrors.description}
+              />
 
-              <div>
-                <label htmlFor="category" className="label">
-                  カテゴリー <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  required
-                  className="input"
-                >
-                  <option value="">選択してください</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SelectField
+                id="category"
+                name="category"
+                label="カテゴリー"
+                required
+                placeholder="選択してください"
+                options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                error={fieldErrors.category}
+              />
             </div>
           </div>
 
@@ -201,17 +232,21 @@ export default function NewProductPage() {
                 <label className="label">
                   料金タイプ <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div
+                  className={`grid grid-cols-2 gap-3 ${fieldErrors.pricing_type ? "ring-2 ring-red-500 ring-offset-2 rounded-lg" : ""}`}
+                  role="radiogroup"
+                  aria-label="料金タイプ"
+                  id="pricing_type"
+                >
                   {pricingTypes.map((type) => (
                     <label
                       key={type.id}
-                      className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:border-primary-500 has-[:checked]:bg-primary-50"
+                      className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:border-primary-500 has-[:checked]:bg-primary-50 transition-colors"
                     >
                       <input
                         type="radio"
                         name="pricing_type"
                         value={type.id}
-                        required
                         className="mt-1"
                       />
                       <div>
@@ -223,23 +258,20 @@ export default function NewProductPage() {
                     </label>
                   ))}
                 </div>
+                {fieldErrors.pricing_type && (
+                  <p className="text-sm text-red-600 mt-1" role="alert">
+                    {fieldErrors.pricing_type}
+                  </p>
+                )}
               </div>
 
-              <div>
-                <label htmlFor="price_info" className="label">
-                  料金詳細
-                </label>
-                <input
-                  type="text"
-                  id="price_info"
-                  name="price_info"
-                  className="input"
-                  placeholder="例: ¥980/月〜、¥500/ユーザー/月"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  具体的な料金がある場合は記載してください
-                </p>
-              </div>
+              <FormField
+                id="price_info"
+                name="price_info"
+                label="料金詳細"
+                placeholder="例: ¥980/月〜、¥500/ユーザー/月"
+                hint="具体的な料金がある場合は記載してください"
+              />
             </div>
           </div>
 
@@ -291,18 +323,15 @@ export default function NewProductPage() {
               リンク
             </h2>
 
-            <div>
-              <label htmlFor="website_url" className="label">
-                公式サイトURL
-              </label>
-              <input
-                type="url"
-                id="website_url"
-                name="website_url"
-                className="input"
-                placeholder="https://example.com"
-              />
-            </div>
+            <FormField
+              id="website_url"
+              name="website_url"
+              type="url"
+              label="公式サイトURL"
+              placeholder="https://example.com"
+              validate={validateUrl}
+              error={fieldErrors.website_url}
+            />
           </div>
 
           {/* Publish */}

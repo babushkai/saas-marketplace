@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useToast } from "@/components/ui/Toast";
 
 interface InquiryFormProps {
   productId: string;
@@ -10,12 +11,12 @@ interface InquiryFormProps {
 export function InquiryForm({ productId, productName }: InquiryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const { showToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSubmitting(true);
-    setError(null);
 
     const formData = new FormData(e.currentTarget);
     const data = {
@@ -38,8 +39,11 @@ export function InquiryForm({ productId, productName }: InquiryFormProps) {
       }
 
       setIsSubmitted(true);
+      showToast("お問い合わせを送信しました", "success");
+      formRef.current?.reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "エラーが発生しました");
+      const message = err instanceof Error ? err.message : "エラーが発生しました";
+      showToast(message, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,12 +73,18 @@ export function InquiryForm({ productId, productName }: InquiryFormProps) {
           <br />
           担当者より折り返しご連絡いたします。
         </p>
+        <button
+          onClick={() => setIsSubmitted(false)}
+          className="btn btn-outline btn-sm mt-4"
+        >
+          別の問い合わせをする
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <p className="text-sm text-gray-600">
         「{productName}」について詳しく知りたい方はお問い合わせください。
       </p>
@@ -133,12 +143,6 @@ export function InquiryForm({ productId, productName }: InquiryFormProps) {
           placeholder="ご質問やご要望をお書きください"
         />
       </div>
-
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-          {error}
-        </div>
-      )}
 
       <button
         type="submit"
