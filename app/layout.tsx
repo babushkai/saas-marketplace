@@ -8,6 +8,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { BackToTop } from "@/components/ui/BackToTop";
+import { Providers } from "@/components/providers/Providers";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
 
@@ -95,9 +97,18 @@ export default function RootLayout({
         <WebsiteJsonLd />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <Providers>
+          {/* Skip to main content link for accessibility */}
+          <a href="#main-content" className="skip-link">
+            メインコンテンツへスキップ
+          </a>
+          <Header />
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+          <BackToTop />
+        </Providers>
         <Analytics />
         <SpeedInsights />
         <GoogleAnalytics />

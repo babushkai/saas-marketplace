@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
 // Dynamically import Clerk components to handle when not configured
@@ -45,16 +47,31 @@ function AuthFallback() {
 }
 
 export function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
   const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   const isClerkConfigured =
     clerkPubKey &&
     !clerkPubKey.includes("placeholder") &&
     !clerkPubKey.includes("xxx");
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
+          {/* Left: Logo and Nav */}
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-3">
               <Link href="/" className="text-xl font-bold text-primary-600">
@@ -75,60 +92,197 @@ export function Header() {
             <nav className="hidden md:flex items-center gap-6">
               <Link
                 href="/products"
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
               >
                 プロダクト一覧
               </Link>
               <Link
                 href="/pricing"
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
               >
                 料金プラン
               </Link>
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
-            {isClerkConfigured ? (
-              <ClerkComponents>
-                {({ SignedIn, SignedOut, UserButton }) => (
-                  <>
-                    <SignedIn>
-                      <Link
-                        href="/dashboard"
-                        className="btn btn-primary text-sm"
-                      >
-                        出品者ページ
-                      </Link>
-                      <UserButton
-                        afterSignOutUrl="/"
-                        appearance={{
-                          elements: {
-                            avatarBox: "w-8 h-8",
-                          },
-                        }}
-                      />
-                    </SignedIn>
-                    <SignedOut>
-                      <Link
-                        href="/sign-in"
-                        className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                      >
-                        ログイン
-                      </Link>
-                      <Link href="/sign-up" className="btn btn-primary text-sm">
-                        無料で始める
-                      </Link>
-                    </SignedOut>
-                  </>
-                )}
-              </ClerkComponents>
-            ) : (
-              <AuthFallback />
-            )}
+          {/* Right: Search, Auth */}
+          <div className="flex items-center gap-3">
+            {/* Search Button */}
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="検索"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+
+            {/* Desktop Auth */}
+            <div className="hidden md:flex items-center gap-4">
+              {isClerkConfigured ? (
+                <ClerkComponents>
+                  {({ SignedIn, SignedOut, UserButton }) => (
+                    <>
+                      <SignedIn>
+                        <Link
+                          href="/dashboard"
+                          className="btn btn-primary text-sm"
+                        >
+                          出品者ページ
+                        </Link>
+                        <UserButton
+                          afterSignOutUrl="/"
+                          appearance={{
+                            elements: {
+                              avatarBox: "w-8 h-8",
+                            },
+                          }}
+                        />
+                      </SignedIn>
+                      <SignedOut>
+                        <Link
+                          href="/sign-in"
+                          className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+                        >
+                          ログイン
+                        </Link>
+                        <Link href="/sign-up" className="btn btn-primary text-sm">
+                          無料で始める
+                        </Link>
+                      </SignedOut>
+                    </>
+                  )}
+                </ClerkComponents>
+              ) : (
+                <AuthFallback />
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="メニュー"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Search Overlay */}
+        {searchOpen && (
+          <div className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-lg p-4 animate-slide-down">
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
+              <input
+                type="text"
+                placeholder="プロダクトを検索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input pl-10 pr-20"
+                autoFocus
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-primary text-sm py-1.5 px-3"
+              >
+                検索
+              </button>
+            </form>
+          </div>
+        )}
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 bg-white animate-slide-down">
+          <nav className="px-4 py-4 space-y-2">
+            <Link
+              href="/products"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors"
+            >
+              プロダクト一覧
+            </Link>
+            <Link
+              href="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors"
+            >
+              料金プラン
+            </Link>
+            <div className="pt-4 border-t border-gray-200 space-y-2">
+              {isClerkConfigured ? (
+                <ClerkComponents>
+                  {({ SignedIn, SignedOut }) => (
+                    <>
+                      <SignedIn>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block btn btn-primary text-center"
+                        >
+                          出品者ページ
+                        </Link>
+                      </SignedIn>
+                      <SignedOut>
+                        <Link
+                          href="/sign-in"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors"
+                        >
+                          ログイン
+                        </Link>
+                        <Link
+                          href="/sign-up"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block btn btn-primary text-center"
+                        >
+                          無料で始める
+                        </Link>
+                      </SignedOut>
+                    </>
+                  )}
+                </ClerkComponents>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors"
+                  >
+                    ログイン
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block btn btn-primary text-center"
+                  >
+                    無料で始める
+                  </Link>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
