@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
+import { ShareButton } from "@/components/products/ShareButton";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product, Seller } from "@/types/database";
@@ -156,23 +157,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     />
                   </svg>
                 </a>
-                <button
-                  className="btn btn-outline justify-center"
-                  onClick={() => {
-                    if (typeof navigator !== "undefined") {
-                      navigator.share?.({
-                        title: product.name,
-                        text: product.tagline,
-                        url: window.location.href,
-                      });
-                    }
-                  }}
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                  共有
-                </button>
+                <ShareButton title={product.name} text={product.tagline} />
               </div>
             )}
           </div>
