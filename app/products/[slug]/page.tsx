@@ -174,7 +174,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               プロダクト詳細
             </h2>
             <div className="prose prose-gray max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{product.description}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {product.description.split("\n").map(line => line.trim()).join("\n")}
+              </ReactMarkdown>
             </div>
           </div>
 
