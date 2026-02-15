@@ -1,5 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
@@ -171,37 +174,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               プロダクト詳細
             </h2>
             <div className="prose prose-gray max-w-none">
-              {product.description.split("\n").map((line, i) => {
-                if (line.startsWith("## ")) {
-                  return (
-                    <h2 key={i} className="text-xl font-bold mt-6 mb-3 text-gray-900">
-                      {line.replace("## ", "")}
-                    </h2>
-                  );
-                }
-                if (line.startsWith("### ")) {
-                  return (
-                    <h3 key={i} className="text-lg font-semibold mt-4 mb-2 text-gray-900">
-                      {line.replace("### ", "")}
-                    </h3>
-                  );
-                }
-                if (line.startsWith("- ")) {
-                  return (
-                    <li key={i} className="ml-4 text-gray-600">
-                      {line.replace("- ", "").replace(/\*\*/g, "")}
-                    </li>
-                  );
-                }
-                if (line.trim() === "") {
-                  return <br key={i} />;
-                }
-                return (
-                  <p key={i} className="text-gray-600 leading-relaxed">
-                    {line}
-                  </p>
-                );
-              })}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {product.description.split("\n").map(line => line.trim()).join("\n")}
+              </ReactMarkdown>
             </div>
           </div>
 
