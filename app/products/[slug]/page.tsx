@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
@@ -172,7 +174,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               プロダクト詳細
             </h2>
             <div className="prose prose-gray max-w-none">
-              <ReactMarkdown>{product.description}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{product.description}</ReactMarkdown>
             </div>
           </div>
 
