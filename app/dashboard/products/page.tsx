@@ -6,33 +6,38 @@ import { getPricingLabel, getPricingColor, formatDate } from "@/lib/utils";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { ProductActions } from "@/components/dashboard/ProductActions";
 import { ProductsTableSkeleton } from "@/components/dashboard/ProductsTableSkeleton";
-import type { Product } from "@/types/database";
+import { PlanBanner } from "@/components/dashboard/PlanBanner";
+import { canAddProduct } from "@/lib/plans";
+import type { Product, PlanTier } from "@/types/database";
 
-async function getSellerProducts(): Promise<Product[]> {
+interface SellerProductsData {
+  products: Product[];
+  plan: PlanTier;
+}
+
+async function getSellerProducts(): Promise<SellerProductsData> {
   const { userId } = await auth();
 
   if (!userId) {
-    return [];
+    return { products: [], plan: "free" };
   }
 
   const supabase = createServerSupabaseClient();
 
   if (!supabase) {
-    return [];
+    return { products: [], plan: "free" };
   }
 
-  // Get seller ID
   const { data: seller } = await supabase
     .from("sellers")
-    .select("id")
+    .select("id, plan")
     .eq("clerk_user_id", userId)
     .single();
 
   if (!seller) {
-    return [];
+    return { products: [], plan: "free" };
   }
 
-  // Get all products (published and unpublished)
   const { data: products, error } = await supabase
     .from("products")
     .select("*")
@@ -41,14 +46,15 @@ async function getSellerProducts(): Promise<Product[]> {
 
   if (error) {
     console.error("Failed to fetch products:", error);
-    return [];
+    return { products: [], plan: (seller.plan as PlanTier) || "free" };
   }
 
-  return products || [];
+  return { products: products || [], plan: (seller.plan as PlanTier) || "free" };
 }
 
 async function ProductsTable() {
-  const products = await getSellerProducts();
+  const { products, plan } = await getSellerProducts();
+  const canAdd = canAddProduct(plan, products.length);
 
   if (products.length === 0) {
     return (
@@ -82,6 +88,8 @@ async function ProductsTable() {
   }
 
   return (
+    <>
+    <PlanBanner plan={plan} productCount={products.length} />
     <div className="card overflow-hidden">
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
@@ -171,6 +179,7 @@ async function ProductsTable() {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 
