@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { slugify } from "@/lib/utils";
+import { canAddProduct, getProductLimit } from "@/lib/plans";
+import type { PlanTier } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -73,9 +75,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ products: filtered });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    const stack = error instanceof Error ? error.stack : undefined;
+    console.error("Products API error:", message);
     return NextResponse.json(
-      { error: "サーバーエラーが発生しました", details: message, stack },
+      { error: "サーバーエラーが発生しました" },
       { status: 500 }
     );
   }
@@ -127,7 +129,7 @@ export async function POST(request: NextRequest) {
     // Get or create seller profile
     let { data: seller } = await supabase
       .from("sellers")
-      .select("id")
+      .select("id, plan")
       .eq("clerk_user_id", userId)
       .single();
 
@@ -170,6 +172,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "出品者情報の取得に失敗しました" },
         { status: 500 }
+      );
+    }
+
+    // Plan limit enforcement
+    const plan = (seller.plan || "free") as PlanTier;
+    const { count: productCount } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("seller_id", seller.id);
+
+    if (!canAddProduct(plan, productCount || 0)) {
+      return NextResponse.json(
+        {
+          error: "プラン上限に達しています。アップグレードしてください。",
+          code: "PLAN_LIMIT_EXCEEDED",
+          limit: getProductLimit(plan),
+        },
+        { status: 403 }
       );
     }
 
