@@ -43,17 +43,21 @@ const UPGRADE_PLANS: { plan: PlanTier; features: string[] }[] = [
 function BillingTab() {
   const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [stripeConfigured, setStripeConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/sellers/me")
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => {
-        if (data?.seller) {
-          setCurrentPlan(data.seller.plan || "free");
-          setHasSubscription(!!data.seller.hasSubscription);
+    Promise.all([
+      fetch("/api/sellers/me").then((res) => res.ok ? res.json() : null),
+      fetch("/api/stripe/status").then((res) => res.ok ? res.json() : null),
+    ])
+      .then(([sellerData, stripeData]) => {
+        if (sellerData?.seller) {
+          setCurrentPlan(sellerData.seller.plan || "free");
+          setHasSubscription(!!sellerData.seller.hasSubscription);
         }
+        setStripeConfigured(stripeData?.configured === true);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -69,6 +73,8 @@ function BillingTab() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (data.error === "stripe_not_configured") {
+        setStripeConfigured(false);
       }
     } catch {
       alert("エラーが発生しました");
@@ -139,7 +145,24 @@ function BillingTab() {
         )}
       </div>
 
-      {availableUpgrades.length > 0 && (
+      {!stripeConfigured && availableUpgrades.length > 0 && (
+        <div className="card p-4 mb-6 bg-amber-50 border-amber-200">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-amber-800">決済システムが未設定です</p>
+              <p className="text-sm text-amber-700 mt-1">
+                有料プランへのアップグレードには Stripe の設定が必要です。
+                管理者が環境変数（STRIPE_SECRET_KEY, STRIPE_PRICE_STANDARD, STRIPE_PRICE_PRO）を設定してください。
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {availableUpgrades.length > 0 && stripeConfigured && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900">アップグレード</h3>
           {availableUpgrades.map(({ plan, features }) => (
