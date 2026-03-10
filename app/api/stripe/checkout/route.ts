@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
-import { getStripe, STRIPE_PRICE_IDS } from "@/lib/stripe.server";
+import { getStripe, STRIPE_PRICE_IDS, isStripeConfigured } from "@/lib/stripe.server";
 import type { PlanTier } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    if (!isStripeConfigured()) {
+      return NextResponse.json({ error: "stripe_not_configured", message: "Stripeが設定されていません" }, { status: 503 });
+    }
+
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
@@ -48,10 +52,11 @@ export async function POST(request: NextRequest) {
       });
       customerId = customer.id;
 
-      await supabase
+      const { error: updateError } = await supabase
         .from("sellers")
         .update({ stripe_customer_id: customerId })
         .eq("id", seller.id);
+      if (updateError) throw updateError;
     }
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

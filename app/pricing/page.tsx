@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
 
 const plans = [
   {
+    id: "free",
     name: "フリー",
     price: "¥0",
     period: "永久無料",
@@ -17,6 +19,7 @@ const plans = [
     highlighted: false,
   },
   {
+    id: "standard",
     name: "スタンダード",
     price: "¥980",
     period: "/月",
@@ -34,6 +37,7 @@ const plans = [
     highlighted: true,
   },
   {
+    id: "pro",
     name: "プロ",
     price: "¥2,980",
     period: "/月",
@@ -68,7 +72,7 @@ const faqs = [
   {
     question: "支払い方法は何がありますか？",
     answer:
-      "クレジットカード（Visa, Mastercard, JCB, American Express）、銀行振込、請求書払いに対応しています。",
+      "クレジットカード（Visa, Mastercard, JCB, American Express）に対応しています。Stripeによる安全な決済処理を採用しています。",
   },
   {
     question: "年払いの割引はありますか？",
@@ -77,7 +81,10 @@ const faqs = [
   },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { userId } = await auth();
+  const isLoggedIn = !!userId;
+
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,58 +101,66 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`card p-8 ${
-                plan.highlighted
-                  ? "border-2 border-primary-600 ring-2 ring-primary-100"
-                  : ""
-              }`}
-            >
-              {plan.highlighted && (
-                <span className="inline-block bg-primary-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
-                  人気No.1
-                </span>
-              )}
-              <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-              <p className="text-gray-600 mt-1 mb-4">{plan.description}</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">
-                  {plan.price}
-                </span>
-                <span className="text-gray-600">{plan.period}</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/sign-up"
-                className={`w-full btn text-center ${
-                  plan.highlighted ? "btn-primary" : "btn-secondary"
+          {plans.map((plan) => {
+            const href = isLoggedIn
+              ? plan.id === "free"
+                ? "/dashboard"
+                : "/dashboard/settings?tab=billing"
+              : "/sign-up";
+
+            return (
+              <div
+                key={plan.name}
+                className={`card p-8 ${
+                  plan.highlighted
+                    ? "border-2 border-primary-600 ring-2 ring-primary-100"
+                    : ""
                 }`}
               >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
+                {plan.highlighted && (
+                  <span className="inline-block bg-primary-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                    人気No.1
+                  </span>
+                )}
+                <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+                <p className="text-gray-600 mt-1 mb-4">{plan.description}</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-gray-900">
+                    {plan.price}
+                  </span>
+                  <span className="text-gray-600">{plan.period}</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start">
+                      <svg
+                        className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={href}
+                  className={`w-full btn text-center ${
+                    plan.highlighted ? "btn-primary" : "btn-secondary"
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
         {/* FAQ Section */}
