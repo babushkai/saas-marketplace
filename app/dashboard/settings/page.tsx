@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { PLAN_LABELS, PLAN_PRICES, PLAN_LIMITS } from "@/lib/plans";
+import type { PlanTier } from "@/types/database";
 
 // Dynamically import Clerk to avoid build errors when not configured
 const ClerkButton = dynamic(
@@ -26,6 +28,152 @@ const ClerkButton = dynamic(
     ),
   }
 );
+
+const UPGRADE_PLANS: { plan: PlanTier; features: string[] }[] = [
+  {
+    plan: "standard",
+    features: ["10プロダクトまで掲載", "メールサポート", "アナリティクスダッシュボード", "注目プロダクトへの掲載"],
+  },
+  {
+    plan: "pro",
+    features: ["無制限のプロダクト掲載", "優先サポート", "高度なアナリティクス", "トップページへの掲載", "カスタムブランディング"],
+  },
+];
+
+function BillingTab() {
+  const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/sellers/me")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.seller) {
+          setCurrentPlan(data.seller.plan || "free");
+          setHasSubscription(!!data.seller.hasSubscription);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleUpgrade = async (plan: PlanTier) => {
+    setActionLoading(plan);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      alert("エラーが発生しました");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleManage = async () => {
+    setActionLoading("manage");
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      alert("エラーが発生しました");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-2xl animate-pulse">
+        <div className="card p-6 mb-6">
+          <div className="h-6 bg-gray-200 rounded w-32 mb-4" />
+          <div className="h-4 bg-gray-200 rounded w-64 mb-4" />
+          <div className="h-10 bg-gray-200 rounded w-24" />
+        </div>
+      </div>
+    );
+  }
+
+  const limit = PLAN_LIMITS[currentPlan];
+  const availableUpgrades = UPGRADE_PLANS.filter((u) => {
+    const tierOrder: Record<PlanTier, number> = { free: 0, standard: 1, pro: 2 };
+    return tierOrder[u.plan] > tierOrder[currentPlan];
+  });
+
+  return (
+    <div className="max-w-2xl">
+      <div className="card p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900">現在のプラン</h3>
+          <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">
+            {PLAN_LABELS[currentPlan]}
+          </span>
+        </div>
+        <div className="flex items-baseline gap-1 mb-4">
+          <span className="text-3xl font-bold text-gray-900">
+            ¥{PLAN_PRICES[currentPlan].toLocaleString()}
+          </span>
+          <span className="text-gray-600">/月</span>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          プロダクト掲載上限: {limit === Infinity ? "無制限" : `${limit}件`}
+        </p>
+        {hasSubscription && (
+          <button
+            onClick={handleManage}
+            disabled={actionLoading === "manage"}
+            className="btn btn-secondary text-sm"
+          >
+            {actionLoading === "manage" ? "読み込み中..." : "サブスクリプションを管理"}
+          </button>
+        )}
+      </div>
+
+      {availableUpgrades.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900">アップグレード</h3>
+          {availableUpgrades.map(({ plan, features }) => (
+            <div key={plan} className="card p-6 border-primary-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-gray-900">{PLAN_LABELS[plan]}</h4>
+                <span className="text-lg font-bold text-gray-900">
+                  ¥{PLAN_PRICES[plan].toLocaleString()}<span className="text-sm font-normal text-gray-500">/月</span>
+                </span>
+              </div>
+              <ul className="space-y-1 mb-4">
+                {features.map((f) => (
+                  <li key={f} className="text-sm text-gray-600 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => handleUpgrade(plan)}
+                disabled={actionLoading === plan}
+                className="btn btn-primary w-full"
+              >
+                {actionLoading === plan ? "処理中..." : `${PLAN_LABELS[plan]}にアップグレード`}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("notifications");
@@ -211,28 +359,7 @@ export default function SettingsPage() {
 
       {/* Billing Tab */}
       {activeTab === "billing" && (
-        <div className="max-w-2xl">
-          <div className="card p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">現在のプラン</h3>
-              <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
-                無料プラン
-              </span>
-            </div>
-            <p className="text-gray-600 mb-4">
-              現在は無料プランをご利用中です。すべての機能をお試しいただけます。
-            </p>
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-bold text-gray-900">¥0</span>
-              <span className="text-gray-600">/月</span>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                有料プランは近日公開予定です。より多くのプロダクト掲載や詳細なアナリティクス機能をご利用いただけるようになります。
-              </p>
-            </div>
-          </div>
-        </div>
+        <BillingTab />
       )}
 
       {/* Security Tab */}
