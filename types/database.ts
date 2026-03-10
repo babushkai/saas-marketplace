@@ -1,4 +1,5 @@
 export type PricingType = "free" | "paid" | "freemium" | "contact";
+export type PlanTier = "free" | "standard" | "pro";
 
 export interface Seller {
   id: string;
@@ -10,6 +11,9 @@ export interface Seller {
   avatar_url: string | null;
   website_url: string | null;
   twitter_url: string | null;
+  plan: PlanTier;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -55,7 +59,11 @@ export interface Category {
 }
 
 // Supabase Insert types
-export type SellerInsert = Omit<Seller, "id" | "created_at" | "updated_at">;
+export type SellerInsert = Omit<Seller, "id" | "created_at" | "updated_at" | "plan" | "stripe_customer_id" | "stripe_subscription_id"> & {
+  plan?: PlanTier;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+};
 export type ProductInsert = Omit<Product, "id" | "created_at" | "updated_at" | "seller">;
 export type InquiryInsert = Omit<Inquiry, "id" | "created_at" | "product">;
 
