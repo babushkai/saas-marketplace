@@ -2,19 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-
-const categories = [
-  { id: "all", name: "すべて" },
-  { id: "marketing", name: "マーケティング" },
-  { id: "sales", name: "営業・CRM" },
-  { id: "finance", name: "経理・財務" },
-  { id: "hr", name: "人事・労務" },
-  { id: "productivity", name: "業務効率化" },
-  { id: "communication", name: "コミュニケーション" },
-  { id: "development", name: "開発・エンジニアリング" },
-  { id: "design", name: "デザイン" },
-  { id: "other", name: "その他" },
-];
+import { FILTER_CATEGORIES } from "@/lib/categories";
 
 const pricingTypes = [
   { id: "free", name: "無料" },
@@ -98,7 +86,7 @@ export function ProductFilters({ selectedCategory, selectedPricing }: ProductFil
           カテゴリー
         </h2>
         <nav className="space-y-1">
-          {categories.map((category) => (
+          {FILTER_CATEGORIES.map((category) => (
             <button
               key={category.id}
               onClick={() => handleCategoryChange(category.id)}

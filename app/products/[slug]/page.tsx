@@ -3,6 +3,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import { ProductCard } from "@/components/products/ProductCard";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
@@ -189,39 +190,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </svg>
                 関連プロダクト
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {relatedProducts.map((relatedProduct) => (
-                  <Link
-                    key={relatedProduct.id}
-                    href={`/products/${relatedProduct.slug}`}
-                    className="group p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-sm transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-                        {relatedProduct.logo_url ? (
-                          <Image
-                            src={relatedProduct.logo_url}
-                            alt={relatedProduct.name}
-                            fill
-                            className="object-contain"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-400">
-                            {relatedProduct.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-medium text-gray-900 group-hover:text-primary-600 truncate transition-colors">
-                          {relatedProduct.name}
-                        </h3>
-                        <p className="text-xs text-gray-500 truncate">
-                          {relatedProduct.tagline}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
+                  <ProductCard key={relatedProduct.id} product={relatedProduct} compact />
                 ))}
               </div>
             </div>

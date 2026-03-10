@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/products/SearchBar";
 import { SortDropdown } from "@/components/ui/SortDropdown";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { MobileFilters } from "@/components/products/MobileFilters";
+import { ViewToggle } from "@/components/ui/ViewToggle";
 import { Pagination } from "@/components/ui/Pagination";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product } from "@/types/database";
@@ -42,6 +43,7 @@ interface ProductsPageProps {
     pricing?: string;
     sort?: string;
     page?: string;
+    view?: string;
   };
 }
 
@@ -140,16 +142,14 @@ async function getProducts(
 
 function ProductsLoading() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[...Array(4)].map((_, i) => (
-        <div key={i} className="card p-4 animate-pulse">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-gray-200 rounded-lg" />
-            <div className="flex-1 space-y-3">
-              <div className="h-5 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="card overflow-hidden animate-pulse">
+          <div className="h-32 bg-gray-100" />
+          <div className="p-4 space-y-3">
+            <div className="h-5 bg-gray-200 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 rounded w-full" />
+            <div className="h-4 bg-gray-200 rounded w-1/4" />
           </div>
         </div>
       ))}
@@ -162,6 +162,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const searchQuery = searchParams.q || "";
   const selectedPricing = searchParams.pricing?.split(",").filter(Boolean) || [];
   const sortOption = searchParams.sort || "newest";
+  const viewMode = searchParams.view === "list" ? "list" : "grid";
   const currentPage = parseInt(searchParams.page || "1", 10);
 
   const { products, totalCount } = await getProducts(
@@ -208,13 +209,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 <SearchBar defaultValue={searchQuery} />
               </Suspense>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <MobileFilters
                 selectedCategory={selectedCategory}
                 selectedPricing={selectedPricing}
               />
               <Suspense fallback={<div className="w-[180px]" />}>
                 <SortDropdown />
+              </Suspense>
+              <Suspense fallback={null}>
+                <ViewToggle currentView={viewMode} />
               </Suspense>
             </div>
           </div>
@@ -251,9 +255,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Products Grid */}
           <Suspense fallback={<ProductsLoading />}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-4"}>
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} compact={viewMode === "list"} />
               ))}
             </div>
           </Suspense>
