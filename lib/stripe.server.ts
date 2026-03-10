@@ -13,8 +13,8 @@ export function getStripe(): Stripe {
 }
 
 export const STRIPE_PRICE_IDS: Partial<Record<PlanTier, string>> = {
-  standard: process.env.STRIPE_PRICE_STANDARD || "",
-  pro: process.env.STRIPE_PRICE_PRO || "",
+  standard: process.env.STRIPE_PRICE_STANDARD || undefined,
+  pro: process.env.STRIPE_PRICE_PRO || undefined,
 };
 
 export const PLAN_BY_PRICE_ID: Record<string, PlanTier> = Object.fromEntries(
@@ -24,3 +24,7 @@ export const PLAN_BY_PRICE_ID: Record<string, PlanTier> = Object.fromEntries(
 );
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
+
+export function isStripeConfigured(): boolean {
+  return !!(stripeSecretKey && STRIPE_PRICE_IDS.standard && STRIPE_PRICE_IDS.pro);
+}

@@ -1,4 +1,6 @@
 -- Add subscription plan columns to sellers table
+-- Run via: Supabase Dashboard > SQL Editor > paste and execute
+-- Safe to re-run: uses IF NOT EXISTS
 ALTER TABLE sellers
   ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free',
   ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,

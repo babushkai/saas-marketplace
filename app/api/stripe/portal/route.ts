@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
-import { getStripe } from "@/lib/stripe.server";
+import { getStripe, isStripeConfigured } from "@/lib/stripe.server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    if (!isStripeConfigured()) {
+      return NextResponse.json({ error: "stripe_not_configured", message: "Stripeが設定されていません" }, { status: 503 });
+    }
+
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
