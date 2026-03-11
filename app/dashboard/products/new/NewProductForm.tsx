@@ -121,8 +121,10 @@ export function NewProductForm({ remaining }: NewProductFormProps) {
         throw new Error("プロダクトの作成に失敗しました");
       }
 
+      const result = await response.json();
       showToast("プロダクトを作成しました", "success");
-      router.push("/dashboard/products");
+      const slug = result.product?.slug;
+      router.push(slug ? `/dashboard/products?created=${slug}` : "/dashboard/products");
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
       showToast("プロダクトの作成に失敗しました", "error");
