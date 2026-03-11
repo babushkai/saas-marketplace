@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
 import { ShareButton } from "@/components/products/ShareButton";
+import { ViewTracker } from "@/components/products/ViewTracker";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product, Seller } from "@/types/database";
@@ -88,6 +89,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ViewTracker productId={product.id} />
       <Breadcrumb
         items={[
           { label: "プロダクト一覧", href: "/products" },
