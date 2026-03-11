@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { PLAN_LABELS, PLAN_PRICES, PLAN_LIMITS } from "@/lib/plans";
@@ -203,26 +203,17 @@ function BillingTab() {
 
 function SettingsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "notifications");
-  const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [notifications, setNotifications] = useState({
-    emailInquiries: true,
-    emailMarketing: false,
-    emailUpdates: true,
-    browserNotifications: true,
-  });
-
-  const handleNotificationsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // TODO: Save to database when notifications table is added
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsLoading(false);
-    setSuccessMessage("通知設定を更新しました");
-    setTimeout(() => setSuccessMessage(null), 3000);
-  };
+  useEffect(() => {
+    if (searchParams.get("success") === "1") {
+      setSuccessMessage("プランのアップグレードが完了しました");
+      setActiveTab("billing");
+      router.replace("/dashboard/settings?tab=billing");
+    }
+  }, [searchParams, router]);
 
   const tabs = [
     { id: "notifications", name: "通知設定" },
@@ -273,115 +264,22 @@ function SettingsContent() {
 
       {/* Notifications Tab */}
       {activeTab === "notifications" && (
-        <form onSubmit={handleNotificationsSubmit} className="max-w-2xl">
-          <div className="card p-6 space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                メール通知
-              </h3>
-              <div className="space-y-4">
-                <label className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">問い合わせ通知</p>
-                    <p className="text-sm text-gray-500">
-                      新しい問い合わせがあったときにメールを受け取る
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={notifications.emailInquiries}
-                    onChange={(e) =>
-                      setNotifications({
-                        ...notifications,
-                        emailInquiries: e.target.checked,
-                      })
-                    }
-                    className="h-5 w-5 text-primary-600 rounded"
-                  />
-                </label>
-                <label className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      マーケティングメール
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      新機能や特別オファーについてのお知らせ
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={notifications.emailMarketing}
-                    onChange={(e) =>
-                      setNotifications({
-                        ...notifications,
-                        emailMarketing: e.target.checked,
-                      })
-                    }
-                    className="h-5 w-5 text-primary-600 rounded"
-                  />
-                </label>
-                <label className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      プロダクトアップデート
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      重要な更新やセキュリティ情報
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={notifications.emailUpdates}
-                    onChange={(e) =>
-                      setNotifications({
-                        ...notifications,
-                        emailUpdates: e.target.checked,
-                      })
-                    }
-                    className="h-5 w-5 text-primary-600 rounded"
-                  />
-                </label>
+        <div className="max-w-2xl">
+          <div className="card p-6">
+            <div className="flex items-start gap-3">
+              <svg className="w-6 h-6 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">通知設定は準備中です</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  メール通知やブラウザ通知の設定機能は近日公開予定です。
+                  お問い合わせの受信状況はダッシュボードからご確認いただけます。
+                </p>
               </div>
             </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                ブラウザ通知
-              </h3>
-              <label className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">
-                    プッシュ通知を有効にする
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    ブラウザでリアルタイム通知を受け取る
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={notifications.browserNotifications}
-                  onChange={(e) =>
-                    setNotifications({
-                      ...notifications,
-                      browserNotifications: e.target.checked,
-                    })
-                  }
-                  className="h-5 w-5 text-primary-600 rounded"
-                />
-              </label>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn btn-primary"
-              >
-                {isLoading ? "保存中..." : "変更を保存"}
-              </button>
-            </div>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Billing Tab */}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
 // Dynamically import Clerk components to handle when not configured
@@ -51,6 +51,26 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Pre-fill search from URL when opening on /products
+  useEffect(() => {
+    if (pathname === "/products" && searchOpen && !searchQuery) {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) setSearchQuery(q);
+    }
+  }, [searchOpen, pathname, searchQuery]);
+
+  // Close search on Escape
+  useEffect(() => {
+    if (!searchOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
 
   const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   const isClerkConfigured =
