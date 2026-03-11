@@ -176,6 +176,69 @@ export async function PUT(
   }
 }
 
+// PATCH /api/products/[id] - Partial update (publish toggle)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return NextResponse.json({ error: "不正なIDです" }, { status: 400 });
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    }
+
+    const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: "データベースが設定されていません" }, { status: 503 });
+    }
+
+    const body = await request.json();
+
+    // Whitelist: only is_published allowed via PATCH
+    if (typeof body.is_published !== "boolean") {
+      return NextResponse.json({ error: "不正なリクエストです" }, { status: 400 });
+    }
+
+    const { data: seller } = await supabase
+      .from("sellers")
+      .select("id")
+      .eq("clerk_user_id", userId)
+      .single();
+
+    if (!seller) {
+      return NextResponse.json({ error: "出品者情報が見つかりません" }, { status: 404 });
+    }
+
+    const { data: existingProduct } = await supabase
+      .from("products")
+      .select("id, seller_id")
+      .eq("id", id)
+      .single();
+
+    if (!existingProduct || existingProduct.seller_id !== seller.id) {
+      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .update({ is_published: body.is_published, updated_at: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) {
+      return NextResponse.json({ error: "更新に失敗しました" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "サーバーエラー" }, { status: 500 });
+  }
+}
+
 // DELETE /api/products/[id] - Delete a product
 export async function DELETE(
   request: NextRequest,
