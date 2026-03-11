@@ -51,6 +51,13 @@ export interface Inquiry {
   product?: Product;
 }
 
+export interface ProductView {
+  id: string;
+  product_id: string;
+  session_id: string;
+  viewed_at: string;
+}
+
 export interface Category {
   id: string;
   name_ja: string;
@@ -66,6 +73,7 @@ export type SellerInsert = Omit<Seller, "id" | "created_at" | "updated_at" | "pl
 };
 export type ProductInsert = Omit<Product, "id" | "created_at" | "updated_at" | "seller">;
 export type InquiryInsert = Omit<Inquiry, "id" | "created_at" | "product">;
+export type ProductViewInsert = Omit<ProductView, "id" | "viewed_at">;
 
 // Database schema for Supabase
 export interface Database {
@@ -85,6 +93,11 @@ export interface Database {
         Row: Inquiry;
         Insert: InquiryInsert;
         Update: Partial<InquiryInsert>;
+      };
+      product_views: {
+        Row: ProductView;
+        Insert: ProductViewInsert;
+        Update: Partial<ProductViewInsert>;
       };
       categories: {
         Row: Category;
