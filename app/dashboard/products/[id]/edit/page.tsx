@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,6 +36,13 @@ export default function EditProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!saved) return;
+    const timer = setTimeout(() => router.push("/dashboard/products"), 1000);
+    return () => clearTimeout(timer);
+  }, [saved, router]);
   const [product, setProduct] = useState<Product | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [screenshots, setScreenshots] = useState<string[]>([]);
@@ -91,7 +99,7 @@ export default function EditProductPage() {
         throw new Error(errorData.error || "更新に失敗しました");
       }
 
-      router.push("/dashboard/products");
+      setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
@@ -415,6 +423,12 @@ export default function EditProductPage() {
               </label>
             </div>
           </div>
+
+          {saved && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+              変更を保存しました。リダイレクト中...
+            </div>
+          )}
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
