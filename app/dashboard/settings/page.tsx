@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { PLAN_LABELS, PLAN_PRICES, PLAN_LIMITS } from "@/lib/plans";
@@ -75,6 +76,8 @@ function BillingTab() {
         window.location.href = data.url;
       } else if (data.error === "stripe_not_configured") {
         setStripeConfigured(false);
+      } else if (data.error) {
+        alert(data.error);
       }
     } catch {
       alert("エラーが発生しました");
@@ -198,8 +201,9 @@ function BillingTab() {
   );
 }
 
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("notifications");
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "notifications");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -441,5 +445,13 @@ export default function SettingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-32 mb-4" /><div className="h-4 bg-gray-200 rounded w-64" /></div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }
