@@ -24,55 +24,49 @@ export async function GET(request: NextRequest) {
     const pricing = searchParams.get("pricing");
     const search = searchParams.get("search");
     const seller_id = searchParams.get("seller_id");
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const limitRaw = parseInt(searchParams.get("limit") || "50");
+    const offsetRaw = parseInt(searchParams.get("offset") || "0");
+    const limit = isNaN(limitRaw) || limitRaw < 1 ? 50 : Math.min(limitRaw, 100);
+    const offset = isNaN(offsetRaw) || offsetRaw < 0 ? 0 : offsetRaw;
 
-    // Simple query - no joins
-    const { data: products, error } = await supabase
+    // Build query with server-side filters
+    let query = supabase
       .from("products")
-      .select("*")
-      .eq("is_published", true)
+      .select("*", { count: "exact" })
+      .eq("is_published", true);
+
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    if (pricing) {
+      const pricingTypes = pricing.split(",");
+      query = query.in("pricing_type", pricingTypes);
+    }
+
+    if (search) {
+      const sanitized = search.slice(0, 100).replace(/[%_\\.,]/g, "");
+      if (sanitized) {
+        query = query.or(`name.ilike.%${sanitized}%,tagline.ilike.%${sanitized}%`);
+      }
+    }
+
+    if (seller_id) {
+      query = query.eq("seller_id", seller_id);
+    }
+
+    const { data: products, error, count } = await query
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) {
       return NextResponse.json(
-        { 
-          error: "プロダクトの取得に失敗しました", 
-          details: error.message, 
-          code: error.code,
-          hint: error.hint 
-        },
+        { error: "プロダクトの取得に失敗しました", details: error.message },
         { status: 500 }
       );
     }
 
-    // Apply filters in memory if needed (simpler approach)
-    let filtered = products || [];
-    
-    if (category) {
-      filtered = filtered.filter(p => p.category === category);
-    }
-    
-    if (pricing) {
-      const pricingTypes = pricing.split(",");
-      filtered = filtered.filter(p => pricingTypes.includes(p.pricing_type));
-    }
-    
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name?.toLowerCase().includes(searchLower) ||
-        p.tagline?.toLowerCase().includes(searchLower) ||
-        p.description?.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    if (seller_id) {
-      filtered = filtered.filter(p => p.seller_id === seller_id);
-    }
-
-    return NextResponse.json({ products: filtered });
+    return NextResponse.json({ products: products || [], total: count ?? 0 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Products API error:", message);
