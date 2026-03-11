@@ -2,19 +2,29 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSignIn } from "@clerk/nextjs";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { signIn } = useSignIn();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement password reset with Clerk
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setIsSubmitted(true);
+
+    try {
+      await signIn?.create({
+        strategy: "reset_password_email_code",
+        identifier: email,
+      });
+    } catch {
+      // Always show success to prevent user enumeration
+    } finally {
+      setIsLoading(false);
+      setIsSubmitted(true);
+    }
   };
 
   if (isSubmitted) {
@@ -41,7 +51,7 @@ export default function ForgotPasswordPage() {
               メールを送信しました
             </h1>
             <p className="text-gray-600 mb-6">
-              <strong>{email}</strong> にパスワードリセット用のリンクを送信しました。
+              <strong>{email}</strong> にパスワードリセット用のコードを送信しました。
               メールをご確認ください。
             </p>
             <p className="text-sm text-gray-500 mb-6">
@@ -75,7 +85,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-3xl font-bold text-gray-900">パスワードをお忘れですか？</h1>
           <p className="mt-2 text-gray-600">
             登録したメールアドレスを入力してください。
-            パスワードリセット用のリンクをお送りします。
+            パスワードリセット用のコードをお送りします。
           </p>
         </div>
 
@@ -105,7 +115,7 @@ export default function ForgotPasswordPage() {
             disabled={isLoading}
             className="w-full btn btn-primary"
           >
-            {isLoading ? "送信中..." : "リセットリンクを送信"}
+            {isLoading ? "送信中..." : "リセットコードを送信"}
           </button>
         </form>
 
