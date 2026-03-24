@@ -81,27 +81,19 @@ async function ProductsTable() {
 
   if (products.length === 0) {
     return (
-      <div className="card overflow-hidden">
-        <div className="bg-gradient-to-br from-primary-50 via-blue-50 to-purple-50 p-12 text-center">
-          <div className="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            最初のプロダクトを出品しましょう
-          </h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            SaaS・ツール・サービスを登録して、潜在顧客にリーチしましょう。
-            登録は数分で完了します。
-          </p>
-          <Link href="/dashboard/products/new" className="btn btn-primary text-base px-6 py-3">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            プロダクトを追加
-          </Link>
-        </div>
+      <div className="card p-12 text-center">
+        <svg className="w-10 h-10 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <h3 className="text-lg font-medium text-gray-900 mb-1">
+          プロダクトがまだありません
+        </h3>
+        <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
+          SaaS・ツール・サービスを登録して出品を始めましょう
+        </p>
+        <Link href="/dashboard/products/new" className="btn btn-primary">
+          プロダクトを追加
+        </Link>
       </div>
     );
   }

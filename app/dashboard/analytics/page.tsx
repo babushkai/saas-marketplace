@@ -53,6 +53,28 @@ function TrendBadge({ value }: { value: number | null }) {
   );
 }
 
+// Catmull-Rom spline interpolation for smooth SVG paths
+function smoothPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M${points[0].x},${points[0].y}`;
+  if (points.length === 2) return `M${points[0].x},${points[0].y}L${points[1].x},${points[1].y}`;
+
+  let d = `M${points[0].x},${points[0].y}`;
+  const t = 0.3;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(points.length - 1, i + 2)];
+    const cp1x = p1.x + (p2.x - p0.x) * t;
+    const cp1y = p1.y + (p2.y - p0.y) * t;
+    const cp2x = p2.x - (p3.x - p1.x) * t;
+    const cp2y = p2.y - (p3.y - p1.y) * t;
+    d += `C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }
+  return d;
+}
+
 function TrendChart({ data, period }: { data: AnalyticsData["timeSeries"]; period: Period }) {
   if (data.length === 0) {
     return (
@@ -75,16 +97,14 @@ function TrendChart({ data, period }: { data: AnalyticsData["timeSeries"]; perio
   const toX = (i: number) => padLeft + (i / Math.max(data.length - 1, 1)) * chartW;
   const toY = (v: number) => padTop + chartH - (v / maxVal) * chartH;
 
-  const viewsPath = data.map((d, i) => `${i === 0 ? "M" : "L"}${toX(i)},${toY(d.views)}`).join(" ");
-  const inquiriesPath = data.map((d, i) => `${i === 0 ? "M" : "L"}${toX(i)},${toY(d.inquiries)}`).join(" ");
+  const viewsPoints = data.map((d, i) => ({ x: toX(i), y: toY(d.views) }));
+  const inquiriesPoints = data.map((d, i) => ({ x: toX(i), y: toY(d.inquiries) }));
 
-  // Show date labels at intervals
   const labelInterval = period === "7d" ? 1 : period === "30d" ? 5 : 15;
 
   return (
     <div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">
-        {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((frac) => (
           <line
             key={frac}
@@ -92,14 +112,12 @@ function TrendChart({ data, period }: { data: AnalyticsData["timeSeries"]; perio
             y1={padTop + chartH * (1 - frac)}
             x2={w - padRight}
             y2={padTop + chartH * (1 - frac)}
-            stroke="#e5e7eb"
+            stroke="#f3f4f6"
             strokeWidth="0.5"
           />
         ))}
-        {/* Views line */}
-        <polyline fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={viewsPath.replace(/[ML]/g, (m) => (m === "M" ? "" : " ")).trim()} />
-        {/* Inquiries line */}
-        <polyline fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={inquiriesPath.replace(/[ML]/g, (m) => (m === "M" ? "" : " ")).trim()} />
+        <path d={smoothPath(viewsPoints)} fill="none" stroke="#4f6ef7" strokeWidth="1.5" strokeLinecap="round" />
+        <path d={smoothPath(inquiriesPoints)} fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeLinecap="round" />
         {/* Date labels */}
         {data.map((d, i) =>
           i % labelInterval === 0 || i === data.length - 1 ? (
@@ -115,7 +133,7 @@ function TrendChart({ data, period }: { data: AnalyticsData["timeSeries"]; perio
       </svg>
       <div className="flex items-center justify-center gap-6 mt-2">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 bg-blue-500 rounded" />
+          <div className="w-3 h-0.5 bg-primary-500 rounded" />
           <span className="text-xs text-gray-500">ページビュー</span>
         </div>
         <div className="flex items-center gap-1.5">
