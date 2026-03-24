@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { jaJP } from "@clerk/localizations";
 import { Analytics } from "@vercel/analytics/react";
@@ -10,6 +11,8 @@ import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { Providers } from "@/components/providers/Providers";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
 
@@ -91,7 +94,7 @@ export default function RootLayout({
   const isClerkConfigured = clerkPubKey && !clerkPubKey.includes("placeholder") && !clerkPubKey.includes("xxx");
 
   const content = (
-    <html lang="ja">
+    <html lang="ja" className={inter.variable}>
       <head>
         <OrganizationJsonLd />
         <WebsiteJsonLd />
