@@ -1,4 +1,6 @@
+import { cache } from "react";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/products/ProductCard";
 import { createServerSupabaseClient } from "@/lib/supabase";
@@ -6,11 +8,14 @@ import type { Product, Seller } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
+
 interface SellerPageProps {
   params: { username: string };
 }
 
-async function getSellerWithProducts(username: string): Promise<{ seller: Seller; products: Product[] } | null> {
+// cache() deduplicates generateMetadata + page render within the same request
+const getSellerWithProducts = cache(async (username: string): Promise<{ seller: Seller; products: Product[] } | null> => {
   const supabase = createServerSupabaseClient();
   
   if (!supabase) {
@@ -41,6 +46,27 @@ async function getSellerWithProducts(username: string): Promise<{ seller: Seller
   return {
     seller: seller as Seller,
     products: (products || []) as Product[],
+  };
+});
+
+export async function generateMetadata({ params }: SellerPageProps): Promise<Metadata> {
+  const data = await getSellerWithProducts(params.username);
+  if (!data) return { title: "出品者が見つかりません" };
+
+  const { seller } = data;
+  const description = seller.bio?.slice(0, 160) ?? `${seller.display_name}が提供するSaaSプロダクト一覧`;
+
+  return {
+    title: `${seller.display_name} - プロフィール`,
+    description,
+    alternates: { canonical: `${BASE_URL}/sellers/${seller.username}` },
+    openGraph: {
+      type: "profile",
+      title: `${seller.display_name} | SaaSマーケット`,
+      description,
+      url: `${BASE_URL}/sellers/${seller.username}`,
+      images: seller.avatar_url ? [{ url: seller.avatar_url }] : [],
+    },
   };
 }
 
