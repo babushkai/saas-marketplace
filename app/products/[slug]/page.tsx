@@ -9,12 +9,20 @@ import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { InquiryForm } from "@/components/products/InquiryForm";
 import { ShareButton } from "@/components/products/ShareButton";
 import { ViewTracker } from "@/components/products/ViewTracker";
+import { ScreenshotGallery } from "@/components/products/ScreenshotGallery";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { createServerSupabaseClient } from "@/lib/supabase";
-import type { Product, Seller } from "@/types/database";
+import { getViewCount } from "@/lib/products";
+import type { Product, Seller, PlanTier } from "@/types/database";
 
 interface ProductPageProps {
   params: { slug: string };
+}
+
+function isNew(createdAt: string): boolean {
+  const created = new Date(createdAt).getTime();
+  if (isNaN(created)) return false;
+  return Date.now() - created < 7 * 24 * 60 * 60 * 1000;
 }
 
 async function getProduct(slug: string): Promise<(Product & { seller: Seller | null }) | null> {
@@ -70,9 +78,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const relatedProducts = await getRelatedProducts(product.category, product.id);
+  const [relatedProducts, viewCount] = await Promise.all([
+    getRelatedProducts(product.category, product.id),
+    getViewCount(product.id),
+  ]);
 
-  // Default seller info if not available
+  const productIsNew = isNew(product.created_at);
+  const screenshots = product.screenshots ?? [];
+
   const seller = product.seller || {
     id: "",
     clerk_user_id: "",
@@ -83,6 +96,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     avatar_url: null,
     website_url: null,
     twitter_url: null,
+    plan: "free" as PlanTier,
+    stripe_customer_id: null,
+    stripe_subscription_id: null,
     created_at: "",
     updated_at: "",
   };
@@ -136,6 +152,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       {product.price_info}
                     </span>
                   )}
+                  {productIsNew && (
+                    <span className="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                      新着
+                    </span>
+                  )}
+                  {viewCount > 0 && (
+                    <span className="inline-flex items-center gap-1 text-sm text-gray-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {viewCount}回閲覧
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -167,6 +197,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             )}
           </div>
+
+          {/* Screenshot Gallery */}
+          {screenshots.length > 0 && (
+            <ScreenshotGallery screenshots={screenshots} />
+          )}
 
           {/* Description Card */}
           <div className="card p-6">
