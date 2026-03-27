@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 
-// Dynamically import Clerk components to handle when not configured
 const ClerkComponents = dynamic(
   () =>
     import("@clerk/nextjs").then((mod) => ({
@@ -48,29 +47,28 @@ function AuthFallback() {
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // Pre-fill search from URL when opening on /products
+  // Sync search input with URL query param on /products
   useEffect(() => {
-    if (pathname === "/products" && searchOpen && !searchQuery) {
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get("q");
-      if (q) setSearchQuery(q);
+    if (pathname === "/products") {
+      setSearchQuery(searchParams.get("q") ?? "");
     }
-  }, [searchOpen, pathname, searchQuery]);
+  }, [pathname, searchParams]);
 
-  // Close search on Escape
+  // Close mobile search on Escape
   useEffect(() => {
-    if (!searchOpen) return;
+    if (!mobileSearchOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSearchOpen(false);
+      if (e.key === "Escape") setMobileSearchOpen(false);
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [searchOpen]);
+  }, [mobileSearchOpen]);
 
   const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   const isClerkConfigured =
@@ -82,8 +80,7 @@ export function Header() {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchOpen(false);
-      setSearchQuery("");
+      setMobileSearchOpen(false);
     }
   };
 
@@ -125,12 +122,33 @@ export function Header() {
             </nav>
           </div>
 
-          {/* Right: Search, Auth */}
+          {/* Center: Desktop Search Bar */}
+          <div className="hidden md:block flex-1 max-w-xs mx-6">
+            <form onSubmit={handleSearch} className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="検索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg placeholder-gray-400 focus:bg-white focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400/20 transition-all"
+              />
+            </form>
+          </div>
+
+          {/* Right: Auth + Mobile controls */}
           <div className="flex items-center gap-3">
-            {/* Search Button */}
+            {/* Mobile Search Button */}
             <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="検索"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,10 +217,10 @@ export function Header() {
           </div>
         </div>
 
-        {/* Search Overlay */}
-        {searchOpen && (
-          <div className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-lg p-4 animate-slide-down">
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
+        {/* Mobile Search Overlay */}
+        {mobileSearchOpen && (
+          <div className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-lg p-4 animate-slide-down md:hidden">
+            <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
                 placeholder="プロダクトを検索..."

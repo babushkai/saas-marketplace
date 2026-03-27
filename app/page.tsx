@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
+import { HeroSearch } from "@/components/home/HeroSearch";
+import { TrustBanner } from "@/components/home/TrustBanner";
 import { createServerSupabaseClient } from "@/lib/supabase";
-import { HOMEPAGE_CATEGORIES } from "@/lib/categories";
+import { getPopularProducts, getNewArrivals } from "@/lib/products";
+import { HOMEPAGE_CATEGORIES, PRODUCT_CATEGORIES } from "@/lib/categories";
 import type { Product } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -32,56 +35,41 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: "bg-gray-100 text-gray-600",
 };
 
-async function getFeaturedProducts(): Promise<Product[]> {
-  const supabase = createServerSupabaseClient();
-
-  if (!supabase) {
-    return [];
-  }
-
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  if (error) {
-    console.error("Failed to fetch products:", error);
-    return [];
-  }
-
-  return data || [];
-}
+const CATEGORY_BG_COLORS: Record<string, string> = {
+  marketing: "bg-orange-500",
+  sales: "bg-blue-500",
+  finance: "bg-emerald-500",
+  hr: "bg-purple-500",
+  productivity: "bg-amber-500",
+  communication: "bg-cyan-500",
+  development: "bg-indigo-500",
+  design: "bg-pink-500",
+  other: "bg-gray-500",
+};
 
 async function getCategoryCounts(): Promise<Record<string, number>> {
   const supabase = createServerSupabaseClient();
-
-  if (!supabase) {
-    return {};
-  }
+  if (!supabase) return {};
 
   const { data, error } = await supabase
     .from("products")
     .select("category")
     .eq("is_published", true);
 
-  if (error || !data) {
-    return {};
-  }
+  if (error || !data) return {};
 
   const counts: Record<string, number> = {};
   data.forEach((p) => {
     counts[p.category] = (counts[p.category] || 0) + 1;
   });
-
   return counts;
 }
 
 export default async function HomePage() {
-  const [products, categoryCounts] = await Promise.all([
-    getFeaturedProducts(),
+  const [categoryCounts, popularProducts, newArrivals] = await Promise.all([
     getCategoryCounts(),
+    getPopularProducts(6),
+    getNewArrivals(6),
   ]);
 
   const totalProducts = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
@@ -90,10 +78,10 @@ export default async function HomePage() {
     <div>
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-16 md:py-24 relative overflow-hidden">
-        {/* Decorative background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 right-10 w-72 h-72 bg-white rounded-full blur-3xl" />
           <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary-300 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400 rounded-full blur-3xl opacity-30" />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="max-w-3xl">
@@ -101,7 +89,7 @@ export default async function HomePage() {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               {totalProducts}+ のプロダクトが掲載中
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
               日本のSaaS・サービスを
               <br />
               見つけよう
@@ -110,48 +98,19 @@ export default async function HomePage() {
               国内発のSaaS製品・オープンソースツールを探せるマーケットプレイス。
               あなたのビジネスに最適なツールがきっと見つかります。
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center gap-2 bg-white text-primary-700 font-semibold px-6 py-3 rounded-lg hover:bg-primary-50 transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                プロダクトを探す
+            <HeroSearch />
+            <p className="mt-4 text-sm text-primary-200">
+              出品者ですか？{" "}
+              <Link href="/sign-up" className="text-white underline underline-offset-2 hover:text-primary-100">
+                無料で出品を始める →
               </Link>
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-medium px-6 py-3 rounded-lg hover:bg-white/20 transition-colors"
-              >
-                出品者として登録
-              </Link>
-            </div>
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Stats Banner */}
-      <section className="relative -mt-6 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-            <div className="p-4 md:p-6 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-primary-600">{totalProducts}</p>
-              <p className="text-xs md:text-sm text-gray-500 mt-1">掲載プロダクト</p>
-            </div>
-            <div className="p-4 md:p-6 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-primary-600">{HOMEPAGE_CATEGORIES.length}</p>
-              <p className="text-xs md:text-sm text-gray-500 mt-1">カテゴリー</p>
-            </div>
-            <div className="p-4 md:p-6 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-primary-600">
-                {categoryCounts["development"] || 0}+
-              </p>
-              <p className="text-xs md:text-sm text-gray-500 mt-1">開発ツール</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Trust Banner */}
+      <TrustBanner totalProducts={totalProducts} categoryCount={PRODUCT_CATEGORIES.length} />
 
       {/* Categories Section */}
       <section className="py-16 bg-white">
@@ -175,20 +134,23 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/products?category=${category.id}`}
-                className="group flex flex-col items-center gap-3 p-5 rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all duration-200"
+                className="group flex flex-col items-center gap-3 rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200 overflow-hidden"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${CATEGORY_COLORS[category.id] || "bg-gray-100 text-gray-600"} group-hover:scale-110 transition-transform`}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CATEGORY_ICONS[category.id] || "M4 6h16M4 12h16M4 18h16"} />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <span className="font-medium text-gray-900 text-sm">
-                    {category.name}
-                  </span>
-                  <span className="block text-xs text-gray-400 mt-0.5">
-                    {categoryCounts[category.id] || 0}件
-                  </span>
+                <div className={`w-full h-2 ${CATEGORY_BG_COLORS[category.id] || "bg-gray-500"}`} />
+                <div className="px-5 pb-5 pt-3 flex flex-col items-center gap-3">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${CATEGORY_COLORS[category.id] || "bg-gray-100 text-gray-600"} group-hover:scale-110 transition-transform`}>
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CATEGORY_ICONS[category.id] || "M4 6h16M4 12h16M4 18h16"} />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <span className="font-medium text-gray-900 text-sm">
+                      {category.name}
+                    </span>
+                    <span className="block text-xs text-gray-400 mt-0.5">
+                      {categoryCounts[category.id] || 0}件
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}
@@ -196,15 +158,52 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
+      {/* Trending Products */}
+      {popularProducts.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  人気プロダクト
+                </h2>
+                <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  人気
+                </span>
+              </div>
+              <Link
+                href="/products?sort=popular"
+                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium text-sm"
+              >
+                すべて見る
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+            {/* Mobile: horizontal scroll / Desktop: grid */}
+            <div className="flex gap-5 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 scrollbar-thin">
+              {popularProducts.map((product) => (
+                <div key={product.id} className="min-w-[280px] md:min-w-0">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* New Arrivals */}
+      <section className={`py-16 ${popularProducts.length > 0 ? "bg-white" : "bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
-            <div>
+            <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold text-gray-900">
                 新着プロダクト
               </h2>
-              <p className="text-gray-500 text-sm mt-1">最近追加されたプロダクト</p>
+              <span className="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                NEW
+              </span>
             </div>
             <Link
               href="/products"
@@ -217,8 +216,46 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {newArrivals.map((product) => (
               <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Value Proposition */}
+      <section className="py-16 bg-primary-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-10">
+            選ばれる理由
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+                title: "無料でプロダクトを掲載",
+                desc: "初期費用ゼロ。フリープランなら永久無料で最大3プロダクトまで掲載可能。",
+              },
+              {
+                icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+                title: "すぐに問い合わせが届く",
+                desc: "掲載後すぐに問い合わせフォームが有効に。リード獲得の機会を逃しません。",
+              },
+              {
+                icon: "M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+                title: "国内B2B企業にリーチ",
+                desc: "日本のSaaS市場に特化。ターゲット企業に直接プロダクトを届けられます。",
+              },
+            ].map((item) => (
+              <div key={item.title} className="bg-white rounded-xl p-6 text-center">
+                <div className="w-12 h-12 mx-auto bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+              </div>
             ))}
           </div>
         </div>

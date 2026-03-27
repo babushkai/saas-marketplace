@@ -9,7 +9,8 @@ import { MobileFilters } from "@/components/products/MobileFilters";
 import { ViewToggle } from "@/components/ui/ViewToggle";
 import { Pagination } from "@/components/ui/Pagination";
 import { createServerSupabaseClient } from "@/lib/supabase";
-import type { Product } from "@/types/database";
+import { getProductViewCounts } from "@/lib/products";
+import type { Product, ProductWithStats } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -48,7 +49,7 @@ interface ProductsPageProps {
 }
 
 interface ProductsResult {
-  products: Product[];
+  products: (Product | ProductWithStats)[];
   totalCount: number;
 }
 
@@ -65,7 +66,17 @@ async function getProducts(
     return { products: [], totalCount: 0 };
   }
 
-  // First, get total count
+  // For popular sort, we need a different strategy:
+  // 1. Get all matching product IDs
+  // 2. Get view counts via RPC
+  // 3. Sort by view count and paginate in-memory
+  // Note: This approach works well under ~1000 products. For larger scale,
+  // a materialized view with pre-computed view counts would be needed.
+  if (sort === "popular") {
+    return getProductsPopularSort(supabase, category, search, pricing, page);
+  }
+
+  // Standard sort path
   let countQuery = supabase
     .from("products")
     .select("*", { count: "exact", head: true })
@@ -86,28 +97,23 @@ async function getProducts(
   const { count } = await countQuery;
   const totalCount = count || 0;
 
-  // Then get paginated data
   let query = supabase
     .from("products")
     .select("*")
     .eq("is_published", true);
 
-  // Category filter
   if (category && category !== "all") {
     query = query.eq("category", category);
   }
 
-  // Search filter
   if (search && search.trim()) {
     query = query.or(`name.ilike.%${search}%,tagline.ilike.%${search}%,description.ilike.%${search}%`);
   }
 
-  // Pricing filter
   if (pricing && pricing.length > 0) {
     query = query.in("pricing_type", pricing);
   }
 
-  // Sorting
   switch (sort) {
     case "oldest":
       query = query.order("created_at", { ascending: true });
@@ -124,7 +130,6 @@ async function getProducts(
       break;
   }
 
-  // Pagination
   const currentPage = page || 1;
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
@@ -140,12 +145,80 @@ async function getProducts(
   return { products: data || [], totalCount };
 }
 
+async function getProductsPopularSort(
+  supabase: NonNullable<ReturnType<typeof createServerSupabaseClient>>,
+  category?: string,
+  search?: string,
+  pricing?: string[],
+  page?: number
+): Promise<ProductsResult> {
+  // Fetch all matching product IDs (lightweight query)
+  let query = supabase
+    .from("products")
+    .select("id")
+    .eq("is_published", true);
+
+  if (category && category !== "all") {
+    query = query.eq("category", category);
+  }
+  if (search && search.trim()) {
+    query = query.or(`name.ilike.%${search}%,tagline.ilike.%${search}%,description.ilike.%${search}%`);
+  }
+  if (pricing && pricing.length > 0) {
+    query = query.in("pricing_type", pricing);
+  }
+
+  const { data: allIds } = await query;
+  if (!allIds || allIds.length === 0) {
+    return { products: [], totalCount: 0 };
+  }
+
+  const productIds = allIds.map((p) => p.id);
+  const viewCounts = await getProductViewCounts(productIds);
+
+  // Sort IDs by view count descending
+  const sortedIds = [...productIds].sort(
+    (a, b) => (viewCounts[b] || 0) - (viewCounts[a] || 0)
+  );
+
+  const totalCount = sortedIds.length;
+  const currentPage = page || 1;
+  const from = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageIds = sortedIds.slice(from, from + ITEMS_PER_PAGE);
+
+  if (pageIds.length === 0) {
+    return { products: [], totalCount };
+  }
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .in("id", pageIds)
+    .eq("is_published", true);
+
+  if (!products) {
+    return { products: [], totalCount };
+  }
+
+  // Re-sort fetched products to match the view count order and attach view_count
+  const productMap = new Map(products.map((p) => [p.id, p]));
+  const sorted: ProductWithStats[] = pageIds
+    .map((id) => {
+      const product = productMap.get(id);
+      if (!product) return null;
+      return { ...product, view_count: viewCounts[id] || 0 };
+    })
+    .filter((p): p is ProductWithStats => p !== null);
+
+  return { products: sorted, totalCount };
+}
+
 function ProductsLoading() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="card overflow-hidden animate-pulse">
-          <div className="h-32 bg-gray-100" />
+          <div className="h-40 bg-gray-100" />
           <div className="p-4 space-y-3">
             <div className="h-5 bg-gray-200 rounded w-3/4" />
             <div className="h-4 bg-gray-200 rounded w-full" />
@@ -247,10 +320,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Results Count */}
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              {totalCount}件のプロダクト
-              {hasFilters && "が見つかりました"}
-            </p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-semibold text-gray-900">{totalCount}件</span>
+              <span className="text-sm text-gray-500">
+                {hasFilters ? "が見つかりました" : "のプロダクト"}
+              </span>
+            </div>
           </div>
 
           {/* Products Grid */}
@@ -286,12 +361,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <p className="text-gray-500 mb-6">
                 検索条件を変更して、もう一度お試しください。
               </p>
-              <a
-                href="/products"
-                className="btn btn-outline"
-              >
-                フィルターをクリア
-              </a>
+              <div className="flex gap-3 justify-center">
+                <a href="/products" className="btn btn-outline">
+                  フィルターをクリア
+                </a>
+                <a href="/products?sort=popular" className="btn btn-secondary">
+                  トレンドを見る
+                </a>
+              </div>
             </div>
           )}
         </main>
