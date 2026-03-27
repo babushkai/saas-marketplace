@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product, ProductWithStats } from "@/types/database";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
-import { PRODUCT_CATEGORIES } from "@/lib/categories";
+import { PRODUCT_CATEGORIES, getCategoryColor } from "@/lib/categories";
 
 interface ProductCardProps {
   product: Product | ProductWithStats;
@@ -66,7 +66,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.slug}`} className="block group">
-      <div className="card h-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+      <div className="card h-full overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-200">
         {/* Cover zone */}
         <div className="relative h-40 overflow-hidden">
           {screenshot ? (
@@ -81,22 +81,22 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
             </>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-              <div className="relative w-16 h-16 flex-shrink-0">
-                {product.logo_url ? (
+            <div className={`w-full h-full ${getCategoryColor(product.category).gradient} flex items-center justify-center`}>
+              {product.logo_url ? (
+                <div className="relative w-20 h-20 bg-white rounded-2xl shadow-lg overflow-hidden p-2">
                   <Image
                     src={product.logo_url}
                     alt={product.name}
                     fill
-                    className="object-contain"
+                    className="object-contain p-1"
                     unoptimized
                   />
-                ) : (
-                  <div className="w-full h-full bg-white rounded-xl shadow-sm flex items-center justify-center text-2xl font-bold text-gray-400">
-                    {product.name.charAt(0)}
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <span className={`text-5xl font-bold opacity-20 ${getCategoryColor(product.category).text}`}>
+                  {product.name.charAt(0)}
+                </span>
+              )}
             </div>
           )}
 
