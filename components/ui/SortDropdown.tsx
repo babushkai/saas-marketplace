@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 const sortOptions = [
   { value: "newest", label: "新着順" },
+  { value: "popular", label: "人気順" },
   { value: "oldest", label: "古い順" },
   { value: "name_asc", label: "名前順 (A-Z)" },
   { value: "name_desc", label: "名前順 (Z-A)" },

@@ -51,6 +51,8 @@ export interface Inquiry {
   product?: Product;
 }
 
+export type ProductWithStats = Product & { view_count: number };
+
 export interface ProductView {
   id: string;
   product_id: string;
