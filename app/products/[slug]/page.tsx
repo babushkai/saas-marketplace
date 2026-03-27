@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { ProductDescription } from "@/components/products/ProductDescription";
 import { ProductCard } from "@/components/products/ProductCard";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
@@ -221,19 +220,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </dl>
           </div>
 
-          {/* Description Card */}
-          <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              プロダクト詳細
-            </h2>
-            <div className="prose-product">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {product.description}
-              </ReactMarkdown>
-            </div>
+          {/* Description */}
+          <div className="card p-6 sm:p-8">
+            <ProductDescription content={product.description} />
           </div>
 
           {/* Related Products */}
