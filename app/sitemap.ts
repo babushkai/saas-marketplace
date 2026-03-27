@@ -1,10 +1,51 @@
 import { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog/posts";
+import { createServerSupabaseClient } from "@/lib/supabase";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = getAllPosts();
+
+  // Fetch dynamic content from Supabase (products + sellers)
+  let productPages: MetadataRoute.Sitemap = [];
+  let sellerPages: MetadataRoute.Sitemap = [];
+
+  try {
+    const supabase = createServerSupabaseClient();
+    if (supabase) {
+      const [{ data: products }, { data: sellers }] = await Promise.all([
+        supabase
+          .from("products")
+          .select("slug, updated_at")
+          .eq("is_published", true),
+        supabase
+          .from("sellers")
+          .select("username, updated_at"),
+      ]);
+
+      if (products) {
+        productPages = products.map((p) => ({
+          url: `${BASE_URL}/products/${p.slug}`,
+          lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+          changeFrequency: "weekly" as const,
+          priority: 0.8,
+        }));
+      }
+
+      if (sellers) {
+        sellerPages = sellers.map((s) => ({
+          url: `${BASE_URL}/sellers/${s.username}`,
+          lastModified: s.updated_at ? new Date(s.updated_at) : new Date(),
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        }));
+      }
+    }
+  } catch (error) {
+    // Fallback: return static-only sitemap when Supabase is unavailable (e.g., CI build without secrets)
+    console.error("Sitemap: failed to fetch dynamic URLs from Supabase:", error);
+  }
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
@@ -92,15 +133,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Category pages
   const categories = [
-    "marketing",
-    "sales-crm",
-    "finance",
-    "hr",
-    "productivity",
-    "communication",
-    "development",
-    "design",
-    "other",
+    "marketing", "sales-crm", "finance", "hr",
+    "productivity", "communication", "development", "design", "other",
   ];
 
   const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
@@ -110,5 +144,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...blogPages, ...categoryPages];
+  return [...staticPages, ...blogPages, ...categoryPages, ...productPages, ...sellerPages];
 }
