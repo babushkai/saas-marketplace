@@ -14,9 +14,10 @@ const pricingTypes = [
 interface ProductFiltersProps {
   selectedCategory: string;
   selectedPricing: string[];
+  categoryCounts?: Record<string, number>;
 }
 
-export function ProductFilters({ selectedCategory, selectedPricing }: ProductFiltersProps) {
+export function ProductFilters({ selectedCategory, selectedPricing, categoryCounts }: ProductFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [localPricing, setLocalPricing] = useState<string[]>(selectedPricing);
@@ -61,6 +62,9 @@ export function ProductFilters({ selectedCategory, selectedPricing }: ProductFil
   };
 
   const hasActiveFilters = selectedCategory !== "all" || localPricing.length > 0;
+  const totalCount = categoryCounts
+    ? Object.values(categoryCounts).reduce((a, b) => a + b, 0)
+    : undefined;
 
   return (
     <aside className="lg:w-64 flex-shrink-0 space-y-4">
@@ -85,20 +89,36 @@ export function ProductFilters({ selectedCategory, selectedPricing }: ProductFil
           </svg>
           カテゴリー
         </h2>
-        <nav className="space-y-1">
-          {FILTER_CATEGORIES.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryChange(category.id)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedCategory === category.id
-                  ? "bg-primary-50 text-primary-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
+        <nav className="space-y-0.5">
+          {FILTER_CATEGORIES.map((category) => {
+            const isActive = selectedCategory === category.id;
+            const count = category.id === "all"
+              ? totalCount
+              : categoryCounts?.[category.id];
+
+            return (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center ${
+                  isActive
+                    ? "bg-primary-50 text-primary-700 font-medium border-l-2 border-primary-500 pl-[calc(0.75rem-2px)]"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <span className="flex-1">{category.name}</span>
+                {count !== undefined && count > 0 && (
+                  <span className={`ml-auto text-xs tabular-nums px-1.5 py-0.5 rounded-full ${
+                    isActive
+                      ? "bg-primary-100 text-primary-600"
+                      : "bg-gray-100 text-gray-400"
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
       </div>
 

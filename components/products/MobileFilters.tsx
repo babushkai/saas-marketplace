@@ -7,9 +7,10 @@ import { ProductFilters } from "@/components/products/ProductFilters";
 interface MobileFiltersProps {
   selectedCategory: string;
   selectedPricing: string[];
+  categoryCounts?: Record<string, number>;
 }
 
-export function MobileFilters({ selectedCategory, selectedPricing }: MobileFiltersProps) {
+export function MobileFilters({ selectedCategory, selectedPricing, categoryCounts }: MobileFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const activeFilterCount =
@@ -41,6 +42,7 @@ export function MobileFilters({ selectedCategory, selectedPricing }: MobileFilte
         <ProductFilters
           selectedCategory={selectedCategory}
           selectedPricing={selectedPricing}
+          categoryCounts={categoryCounts}
         />
       </Drawer>
     </>

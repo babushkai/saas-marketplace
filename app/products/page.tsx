@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductFilters } from "@/components/products/ProductFilters";
@@ -10,6 +11,7 @@ import { ViewToggle } from "@/components/ui/ViewToggle";
 import { Pagination } from "@/components/ui/Pagination";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getProductViewCounts } from "@/lib/products";
+import { PRODUCT_CATEGORIES } from "@/lib/categories";
 import type { Product, ProductWithStats } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +53,24 @@ interface ProductsPageProps {
 interface ProductsResult {
   products: (Product | ProductWithStats)[];
   totalCount: number;
+}
+
+async function getCategoryCounts(): Promise<Record<string, number>> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) return {};
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("category")
+    .eq("is_published", true);
+
+  if (error || !data) return {};
+
+  const counts: Record<string, number> = {};
+  data.forEach((p) => {
+    counts[p.category] = (counts[p.category] || 0) + 1;
+  });
+  return counts;
 }
 
 async function getProducts(
@@ -152,7 +172,6 @@ async function getProductsPopularSort(
   pricing?: string[],
   page?: number
 ): Promise<ProductsResult> {
-  // Fetch all matching product IDs (lightweight query)
   let query = supabase
     .from("products")
     .select("id")
@@ -176,7 +195,6 @@ async function getProductsPopularSort(
   const productIds = allIds.map((p) => p.id);
   const viewCounts = await getProductViewCounts(productIds);
 
-  // Sort IDs by view count descending
   const sortedIds = [...productIds].sort(
     (a, b) => (viewCounts[b] || 0) - (viewCounts[a] || 0)
   );
@@ -200,7 +218,6 @@ async function getProductsPopularSort(
     return { products: [], totalCount };
   }
 
-  // Re-sort fetched products to match the view count order and attach view_count
   const productMap = new Map(products.map((p) => [p.id, p]));
   const sorted: ProductWithStats[] = pageIds
     .map((id) => {
@@ -213,6 +230,35 @@ async function getProductsPopularSort(
   return { products: sorted, totalCount };
 }
 
+function buildFilterUrl(
+  currentParams: ProductsPageProps["searchParams"],
+  removeKey: string,
+  removeValue?: string
+): string {
+  const params = new URLSearchParams();
+  if (currentParams.category && removeKey !== "category") params.set("category", currentParams.category);
+  if (currentParams.q && removeKey !== "q") params.set("q", currentParams.q);
+  if (currentParams.sort) params.set("sort", currentParams.sort);
+  if (currentParams.page) params.set("page", currentParams.page);
+  if (currentParams.view) params.set("view", currentParams.view);
+
+  if (currentParams.pricing) {
+    if (removeKey === "pricing" && removeValue) {
+      const remaining = currentParams.pricing.split(",").filter((v) => v !== removeValue).join(",");
+      if (remaining) params.set("pricing", remaining);
+    } else if (removeKey !== "pricing") {
+      params.set("pricing", currentParams.pricing);
+    }
+  }
+
+  const qs = params.toString();
+  return qs ? `/products?${qs}` : "/products";
+}
+
+function getCategoryNameById(id: string): string | undefined {
+  return PRODUCT_CATEGORIES.find((c) => c.id === id)?.name;
+}
+
 function ProductsLoading() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -220,9 +266,13 @@ function ProductsLoading() {
         <div key={i} className="card overflow-hidden animate-pulse">
           <div className="h-40 bg-gray-100" />
           <div className="p-4 space-y-3">
+            <div className="h-4 bg-gray-100 rounded w-16" />
             <div className="h-5 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 rounded w-full" />
-            <div className="h-4 bg-gray-200 rounded w-1/4" />
+            <div className="h-4 bg-gray-100 rounded w-full" />
+            <div className="pt-3 border-t border-gray-100 flex justify-between">
+              <div className="h-5 bg-gray-100 rounded w-16" />
+              <div className="h-5 bg-gray-100 rounded w-4" />
+            </div>
           </div>
         </div>
       ))}
@@ -238,93 +288,125 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const viewMode = searchParams.view === "list" ? "list" : "grid";
   const currentPage = parseInt(searchParams.page || "1", 10);
 
-  const { products, totalCount } = await getProducts(
-    selectedCategory,
-    searchQuery,
-    selectedPricing,
-    sortOption,
-    currentPage
-  );
+  const [{ products, totalCount }, categoryCounts] = await Promise.all([
+    getProducts(selectedCategory, searchQuery, selectedPricing, sortOption, currentPage),
+    getCategoryCounts(),
+  ]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const hasFilters = selectedCategory !== "all" || searchQuery || selectedPricing.length > 0;
+  const categoryName = selectedCategory !== "all" ? getCategoryNameById(selectedCategory) : undefined;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Breadcrumb items={[{ label: "プロダクト一覧" }]} />
+      <Breadcrumb items={[
+        { label: "プロダクト一覧", href: categoryName ? "/products" : undefined },
+        ...(categoryName ? [{ label: categoryName }] : []),
+      ]} />
 
+      {/* Page Header — context-aware */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          プロダクト一覧
-        </h1>
-        <p className="text-gray-600">
-          日本発のSaaS製品・サービスを探してみましょう
-        </p>
+        {categoryName ? (
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {categoryName}
+            </h1>
+            <span className="bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1 rounded-full">
+              {totalCount}件
+            </span>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900">
+                プロダクト一覧
+              </h1>
+              <span className="bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1 rounded-full">
+                {totalCount}件
+              </span>
+            </div>
+            <p className="text-gray-500 mt-1">
+              日本発のSaaS製品・サービスを探してみましょう
+            </p>
+          </>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar - Filters (hidden on mobile) */}
+        {/* Sidebar */}
         <Suspense fallback={<div className="hidden lg:block lg:w-64 flex-shrink-0" />}>
           <div className="hidden lg:block">
             <ProductFilters
               selectedCategory={selectedCategory}
               selectedPricing={selectedPricing}
+              categoryCounts={categoryCounts}
             />
           </div>
         </Suspense>
 
         {/* Main Content */}
         <main className="flex-1">
-          {/* Search and Sort Bar */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <Suspense fallback={<div className="input" />}>
-                <SearchBar defaultValue={searchQuery} />
-              </Suspense>
-            </div>
-            <div className="flex gap-2 items-center">
+          {/* Row 1: Search bar */}
+          <div className="mb-4">
+            <Suspense fallback={<div className="input" />}>
+              <SearchBar defaultValue={searchQuery} />
+            </Suspense>
+          </div>
+
+          {/* Row 2: Filters/Count + Sort/View */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
               <MobileFilters
                 selectedCategory={selectedCategory}
                 selectedPricing={selectedPricing}
+                categoryCounts={categoryCounts}
               />
+              {hasFilters && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {searchQuery && (
+                    <Link
+                      href={buildFilterUrl(searchParams, "q")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-100 text-primary-800 rounded-full text-xs font-medium hover:bg-primary-200 transition-colors"
+                    >
+                      「{searchQuery}」
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </Link>
+                  )}
+                  {categoryName && (
+                    <Link
+                      href={buildFilterUrl(searchParams, "category")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors"
+                    >
+                      {categoryName}
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </Link>
+                  )}
+                  {selectedPricing.map((p) => (
+                    <Link
+                      key={p}
+                      href={buildFilterUrl(searchParams, "pricing", p)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors"
+                    >
+                      {p === "free" ? "無料" : p === "freemium" ? "フリーミアム" : p === "paid" ? "有料" : "要問合せ"}
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 items-center flex-shrink-0">
               <Suspense fallback={<div className="w-[180px]" />}>
                 <SortDropdown />
               </Suspense>
               <Suspense fallback={null}>
                 <ViewToggle currentView={viewMode} />
               </Suspense>
-            </div>
-          </div>
-
-          {/* Active Filters Display */}
-          {hasFilters && (
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-gray-500">適用中:</span>
-              {searchQuery && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-medium">
-                  「{searchQuery}」
-                </span>
-              )}
-              {selectedCategory !== "all" && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                  カテゴリー: {selectedCategory}
-                </span>
-              )}
-              {selectedPricing.map((p) => (
-                <span key={p} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                  {p === "free" ? "無料" : p === "freemium" ? "フリーミアム" : p === "paid" ? "有料" : "要問合せ"}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Results Count */}
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-semibold text-gray-900">{totalCount}件</span>
-              <span className="text-sm text-gray-500">
-                {hasFilters ? "が見つかりました" : "のプロダクト"}
-              </span>
             </div>
           </div>
 
@@ -349,25 +431,28 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Empty State */}
           {products.length === 0 && (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="text-center py-20">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-50 rounded-2xl shadow-inner mb-6">
+                <span className="text-5xl">{searchQuery ? "🔍" : "📦"}</span>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                プロダクトが見つかりませんでした
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                見つかりませんでした
               </h3>
-              <p className="text-gray-500 mb-6">
-                検索条件を変更して、もう一度お試しください。
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                {searchQuery
+                  ? `「${searchQuery}」に一致するプロダクトはありません。別のキーワードをお試しください。`
+                  : "条件に一致するプロダクトはありません。フィルターを変更してみてください。"
+                }
               </p>
               <div className="flex gap-3 justify-center">
-                <a href="/products" className="btn btn-outline">
-                  フィルターをクリア
+                <a href="/products" className="btn btn-primary btn-lg">
+                  すべて見る
                 </a>
-                <a href="/products?sort=popular" className="btn btn-secondary">
-                  トレンドを見る
-                </a>
+                {hasFilters && (
+                  <a href="/products" className="btn btn-outline btn-lg">
+                    フィルターをクリア
+                  </a>
+                )}
               </div>
             </div>
           )}
