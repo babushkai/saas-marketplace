@@ -90,7 +90,7 @@ export default async function HomePage() {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               {totalProducts}+ のプロダクトが掲載中
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 leading-tight">
               日本のSaaS・サービスを
               <br />
               見つけよう
