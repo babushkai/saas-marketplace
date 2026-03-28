@@ -18,6 +18,14 @@ const config: Config = {
           "sans-serif",
         ],
       },
+      letterSpacing: {
+        "brand-tight": "-0.03em",
+      },
+      boxShadow: {
+        "btn-primary": "0 1px 2px rgba(61, 85, 212, 0.3)",
+        "btn-primary-hover": "0 4px 12px rgba(61, 85, 212, 0.35)",
+        "input-focus": "0 0 0 3px rgba(79, 110, 247, 0.12)",
+      },
       colors: {
         primary: {
           50: "#f0f2fe",

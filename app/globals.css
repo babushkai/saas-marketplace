@@ -15,27 +15,27 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium transition-all duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply bg-primary-600 text-white shadow-btn-primary hover:bg-primary-700 hover:shadow-btn-primary-hover active:scale-[0.98] active:shadow-btn-primary focus:ring-primary-500;
   }
 
   .btn-secondary {
-    @apply bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500;
+    @apply bg-gray-100 text-gray-900 hover:bg-gray-200 active:scale-[0.98] focus:ring-gray-500;
   }
 
   .btn-outline {
-    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-primary-500 hover:border-gray-400;
+    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-primary-300 hover:shadow-sm active:scale-[0.98] focus:ring-primary-500;
   }
 
   .btn-ghost {
-    @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500;
+    @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:scale-[0.98] focus:ring-gray-500;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    @apply bg-red-600 text-white hover:bg-red-700 active:scale-[0.98] focus:ring-red-500;
   }
 
   .btn-sm {
@@ -47,7 +47,7 @@
   }
 
   .input {
-    @apply block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-500 transition-colors duration-150 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/20;
+    @apply block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-150 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/15 focus:shadow-input-focus;
   }
 
   .input-error {
@@ -110,11 +110,45 @@
   }
 
   .section-title {
-    @apply text-2xl sm:text-3xl font-bold text-gray-900 mb-4;
+    @apply text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4;
   }
 
   .section-subtitle {
-    @apply text-lg text-gray-600 max-w-2xl;
+    @apply text-lg text-gray-600 max-w-2xl leading-relaxed;
+  }
+
+  /* Navigation link with animated underline */
+  .nav-link {
+    @apply relative text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors duration-150;
+  }
+
+  .nav-link::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    border-radius: 9999px;
+    @apply bg-primary-500 transition-all duration-200;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+  .nav-link-active {
+    @apply text-primary-600 font-semibold;
+  }
+
+  .nav-link-active::after {
+    width: 100%;
+  }
+
+  /* Footer link */
+  .footer-link {
+    @apply text-sm text-gray-500 hover:text-gray-900 transition-colors duration-150;
   }
 
   /* Divider */
