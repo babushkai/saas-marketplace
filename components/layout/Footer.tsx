@@ -6,30 +6,6 @@ export function Footer() {
     <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
       <div className="h-1 bg-gradient-to-r from-primary-500 to-primary-700" />
 
-      {/* CTA Band */}
-      <div className="bg-primary-50 border-b border-primary-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-                あなたのSaaSを掲載しませんか？
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                無料プランで今すぐ始められます。審査なし、即時公開。
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Link href="/sign-up" className="btn btn-primary">
-                無料で出品を始める
-              </Link>
-              <Link href="/pricing" className="btn btn-outline text-sm">
-                料金を見る
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Newsletter */}
         <div className="pb-8 mb-8 border-b border-gray-200">
