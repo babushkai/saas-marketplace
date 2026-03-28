@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
+import { StaggerGrid } from "@/components/ui/StaggerGrid";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import { TrustBanner } from "@/components/home/TrustBanner";
 import { createServerSupabaseClient } from "@/lib/supabase";
@@ -215,11 +216,11 @@ export default async function HomePage() {
               </svg>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newArrivals.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
