@@ -1,7 +1,10 @@
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ProductDescription } from "@/components/products/ProductDescription";
 import { ProductCard } from "@/components/products/ProductCard";
+import { StaggerGrid } from "@/components/ui/StaggerGrid";
 import { notFound } from "next/navigation";
 import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
@@ -10,10 +13,13 @@ import { InquiryForm } from "@/components/products/InquiryForm";
 import { ShareButton } from "@/components/products/ShareButton";
 import { ViewTracker } from "@/components/products/ViewTracker";
 import { ScreenshotGallery } from "@/components/products/ScreenshotGallery";
+import { ProductJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getViewCount } from "@/lib/products";
 import type { Product, Seller } from "@/types/database";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
 
 interface ProductPageProps {
   params: { slug: string };
@@ -29,7 +35,7 @@ function getCategoryName(categoryId: string): string {
   return PRODUCT_CATEGORIES.find((c) => c.id === categoryId)?.name ?? "その他";
 }
 
-async function getProduct(slug: string): Promise<(Product & { seller: Seller | null }) | null> {
+const getProduct = cache(async (slug: string): Promise<(Product & { seller: Seller | null }) | null> => {
   const supabase = createServerSupabaseClient();
   if (!supabase) return null;
 
@@ -42,6 +48,34 @@ async function getProduct(slug: string): Promise<(Product & { seller: Seller | n
 
   if (error || !data) return null;
   return data as Product & { seller: Seller | null };
+});
+
+// Dynamic SEO metadata — uses cached getProduct (single DB query shared with page render)
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const product = await getProduct(params.slug);
+  if (!product) return { title: "プロダクトが見つかりません" };
+
+  const screenshots = product.screenshots ?? [];
+  const ogImage = screenshots[0] || product.logo_url || `${BASE_URL}/og-image.png`;
+
+  return {
+    title: product.name,
+    description: product.tagline.slice(0, 160),
+    alternates: { canonical: `${BASE_URL}/products/${product.slug}` },
+    openGraph: {
+      type: "website",
+      title: `${product.name} | SaaSマーケット`,
+      description: product.tagline.slice(0, 160),
+      url: `${BASE_URL}/products/${product.slug}`,
+      images: [screenshots[0] ? { url: ogImage } : { url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.tagline.slice(0, 160),
+      images: [ogImage],
+    },
+  };
 }
 
 async function getRelatedProducts(category: string, currentId: string): Promise<Product[]> {
@@ -79,6 +113,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ProductJsonLd
+        name={product.name}
+        description={product.tagline}
+        image={screenshots[0] || product.logo_url || undefined}
+        url={`${BASE_URL}/products/${product.slug}`}
+        brand={seller?.display_name}
+        category={categoryName}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "ホーム", url: BASE_URL },
+          { name: "プロダクト一覧", url: `${BASE_URL}/products` },
+          { name: categoryName, url: `${BASE_URL}/products?category=${product.category}` },
+          { name: product.name, url: `${BASE_URL}/products/${product.slug}` },
+        ]}
+      />
       <ViewTracker productId={product.id} />
       <Breadcrumb
         items={[
@@ -245,11 +295,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </svg>
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StaggerGrid className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {relatedProducts.map((relatedProduct) => (
                   <ProductCard key={relatedProduct.id} product={relatedProduct} />
                 ))}
-              </div>
+              </StaggerGrid>
             </div>
           )}
         </div>

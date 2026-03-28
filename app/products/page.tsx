@@ -12,6 +12,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getProductViewCounts } from "@/lib/products";
 import { PRODUCT_CATEGORIES } from "@/lib/categories";
+import { StaggerGrid } from "@/components/ui/StaggerGrid";
 import type { Product, ProductWithStats } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -412,11 +413,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Products Grid */}
           <Suspense fallback={<ProductsLoading />}>
-            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-4"}>
+            <StaggerGrid className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-4"}>
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} compact={viewMode === "list"} />
               ))}
-            </div>
+            </StaggerGrid>
           </Suspense>
 
           {/* Pagination */}
