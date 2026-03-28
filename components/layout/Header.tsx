@@ -49,15 +49,18 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Sync search input with URL query param on /products
+  // Sync search input with URL query param on /products + close overlays on route change
   useEffect(() => {
     if (pathname === "/products") {
       setSearchQuery(searchParams.get("q") ?? "");
     }
+    setMobileSearchOpen(false);
+    setMobileMenuOpen(false);
   }, [pathname, searchParams]);
 
   // Close mobile search on Escape
@@ -69,6 +72,17 @@ export function Header() {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [mobileSearchOpen]);
+
+  // Glass effect on scroll
+  useEffect(() => {
+    const onScroll = () => {
+      const isScrolled = window.scrollY > 8;
+      setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   const isClerkConfigured =
@@ -85,7 +99,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className={`sticky top-0 z-50 transition-all duration-200 ${scrolled ? "bg-white/90 backdrop-blur-md border-b border-gray-200/80 shadow-sm" : "bg-white border-b border-gray-200"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left: Logo and Nav */}
@@ -109,13 +123,15 @@ export function Header() {
             <nav className="hidden md:flex items-center gap-6">
               <Link
                 href="/products"
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+                className={`nav-link ${pathname === "/products" || pathname?.startsWith("/products/") ? "nav-link-active" : ""}`}
+                aria-current={pathname === "/products" || pathname?.startsWith("/products/") ? "page" : undefined}
               >
                 プロダクト一覧
               </Link>
               <Link
                 href="/pricing"
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+                className={`nav-link ${pathname === "/pricing" ? "nav-link-active" : ""}`}
+                aria-current={pathname === "/pricing" ? "page" : undefined}
               >
                 料金プラン
               </Link>
