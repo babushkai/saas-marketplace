@@ -38,14 +38,17 @@ export function TrustBanner({ totalProducts, categoryCount }: TrustBannerProps) 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
           {TRUST_ITEMS.map((item, i) => (
-            <div key={i} className="flex items-center gap-3 py-5 px-4 md:justify-center">
+            <div
+              key={i}
+              className="flex items-center gap-3 py-5 px-4 md:justify-center transition-colors hover:bg-primary-50/40"
+            >
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
                 </svg>
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900">
+                <p className="text-lg font-bold text-gray-900 tracking-brand-tight">
                   {item.getValue({ totalProducts, categoryCount })}
                 </p>
                 <p className="text-xs text-gray-500">{item.label}</p>
