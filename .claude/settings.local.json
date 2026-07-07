@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/usr/bin/find app *)",
+      "Bash(/usr/bin/find components *)",
+      "Bash(/usr/bin/find lib *)",
+      "Bash(/usr/bin/find .next -type f)",
+      "Bash(/usr/bin/find .vercel -type f)",
+      "Bash(/usr/bin/find .claude -type f)",
+      "Bash(/usr/bin/find .github -type f)",
+      "Bash(/usr/bin/find supabase *)",
+      "Bash(git init *)",
+      "Bash(npm -v)",
+      "Bash(npm view *)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(npm cache *)",
+      "Bash(npx shadcn@latest init --help)",
+      "Bash(npx shadcn@latest init -y -b radix -t next)",
+      "Bash(pkill -f \"shadcn@latest init\")",
+      "Bash(npx shadcn@latest init -y -b radix -t next -p nova)",
+      "Bash(npx shadcn@latest --help)",
+      "Bash(npx shadcn@latest add card badge separator accordion avatar sheet -y)",
+      "Bash(npm audit *)",
+      "Bash(/usr/bin/find *)",
+      "Bash(kill 97557)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f \"next start\")",
+      "Bash(kill 13066)",
+      "Skill(codex:rescue)",
+      "Bash(node *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
+    ]
+  }
+}
