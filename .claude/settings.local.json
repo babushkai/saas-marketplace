@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/usr/bin/find app *)",
+      "Bash(/usr/bin/find components *)",
+      "Bash(/usr/bin/find lib *)",
+      "Bash(/usr/bin/find .next -type f)",
+      "Bash(/usr/bin/find .vercel -type f)",
+      "Bash(/usr/bin/find .claude -type f)",
+      "Bash(/usr/bin/find .github -type f)",
+      "Bash(/usr/bin/find supabase *)",
+      "Bash(git init *)"
+    ]
+  }
+}
