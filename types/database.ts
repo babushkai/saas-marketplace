@@ -1,0 +1,117 @@
+export type PricingType = "free" | "paid" | "freemium" | "contact";
+export type PlanTier = "free" | "standard" | "pro";
+
+export interface Seller {
+  id: string;
+  clerk_user_id: string;
+  username: string;
+  display_name: string;
+  company_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  website_url: string | null;
+  twitter_url: string | null;
+  plan: PlanTier;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Product {
+  id: string;
+  seller_id: string;
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string;
+  category: string;
+  pricing_type: PricingType;
+  price_info: string | null;
+  logo_url: string | null;
+  screenshots: string[];
+  website_url: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  seller?: Seller;
+}
+
+export interface Inquiry {
+  id: string;
+  product_id: string;
+  sender_name: string;
+  sender_email: string;
+  sender_company: string | null;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  // Joined data
+  product?: Product;
+}
+
+export type ProductWithStats = Product & { view_count: number };
+
+export interface ProductView {
+  id: string;
+  product_id: string;
+  session_id: string;
+  viewed_at: string;
+}
+
+export interface Category {
+  id: string;
+  name_ja: string;
+  name_en: string;
+  display_order: number;
+}
+
+// Supabase Insert types
+export type SellerInsert = Omit<Seller, "id" | "created_at" | "updated_at" | "plan" | "stripe_customer_id" | "stripe_subscription_id"> & {
+  plan?: PlanTier;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+};
+export type ProductInsert = Omit<Product, "id" | "created_at" | "updated_at" | "seller">;
+export type InquiryInsert = Omit<Inquiry, "id" | "created_at" | "product">;
+export type ProductViewInsert = Omit<ProductView, "id" | "viewed_at">;
+
+// Database schema for Supabase
+export interface Database {
+  public: {
+    Tables: {
+      sellers: {
+        Row: Seller;
+        Insert: SellerInsert;
+        Update: Partial<SellerInsert>;
+      };
+      products: {
+        Row: Product;
+        Insert: ProductInsert;
+        Update: Partial<ProductInsert>;
+      };
+      inquiries: {
+        Row: Inquiry;
+        Insert: InquiryInsert;
+        Update: Partial<InquiryInsert>;
+      };
+      product_views: {
+        Row: ProductView;
+        Insert: ProductViewInsert;
+        Update: Partial<ProductViewInsert>;
+      };
+      categories: {
+        Row: Category;
+        Insert: Category;
+        Update: Partial<Category>;
+      };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: {
+      pricing_type: PricingType;
+    };
+    CompositeTypes: Record<string, never>;
+  };
+}
