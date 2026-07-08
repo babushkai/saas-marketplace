@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
 import { StaggerGrid } from "@/components/ui/StaggerGrid";
-import { HeroSearch } from "@/components/home/HeroSearch";
-import { TrustBanner } from "@/components/home/TrustBanner";
+import { Reveal } from "@/components/ui/Reveal";
+import { Hero } from "@/components/home/Hero";
+import { SectionHeading } from "@/components/home/SectionHeading";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getPopularProducts, getNewArrivals } from "@/lib/products";
 import { HOMEPAGE_CATEGORIES, PRODUCT_CATEGORIES } from "@/lib/categories";
@@ -69,73 +70,35 @@ async function getCategoryCounts(): Promise<Record<string, number>> {
 export default async function HomePage() {
   const [categoryCounts, popularProducts, newArrivals] = await Promise.all([
     getCategoryCounts(),
-    getPopularProducts(6),
+    getPopularProducts(9),
     getNewArrivals(6),
   ]);
 
   const totalProducts = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  // Split the same popular-products fetch into a small hero social-proof strip
+  // and the Trending Products grid below, so the two sections don't repeat
+  // the same items back-to-back.
+  const heroFeatured = popularProducts.slice(0, 3);
+  const trendingProducts = popularProducts.slice(3, 9);
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary-300 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400 rounded-full blur-3xl opacity-30" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm mb-6">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              {totalProducts}+ のプロダクトが掲載中
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 leading-tight">
-              日本のSaaS・サービスを
-              <br />
-              見つけよう
-            </h1>
-            <p className="text-lg md:text-xl text-primary-100 mb-8 max-w-2xl">
-              国内発のSaaS製品・オープンソースツールを探せるマーケットプレイス。
-              あなたのビジネスに最適なツールがきっと見つかります。
-            </p>
-            <HeroSearch />
-            <p className="mt-4 text-sm text-primary-200">
-              出品者ですか？{" "}
-              <Link href="/sign-up" className="text-white underline underline-offset-2 hover:text-primary-100">
-                無料で出品を始める →
-              </Link>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Banner */}
-      <TrustBanner totalProducts={totalProducts} categoryCount={PRODUCT_CATEGORIES.length} />
+      <Hero
+        totalProducts={totalProducts}
+        categoryCount={PRODUCT_CATEGORIES.length}
+        featuredProducts={heroFeatured}
+      />
 
       {/* Categories Section */}
-      <section className="py-16 bg-white">
+      <Reveal as="section" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">
-              カテゴリーから探す
-            </h2>
-            <Link
-              href="/products"
-              className="text-primary-600 hover:text-primary-700 font-medium text-sm hidden sm:inline-flex items-center gap-1"
-            >
-              すべて見る
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
+          <SectionHeading eyebrow="Categories" title="カテゴリーから探す" href="/products" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {HOMEPAGE_CATEGORIES.map((category) => (
               <Link
                 key={category.id}
                 href={`/products?category=${category.id}`}
-                className="group flex flex-col items-center gap-3 rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200 overflow-hidden"
+                className="group flex flex-col items-center gap-3 rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-card-premium hover:-translate-y-1 transition-all duration-200 overflow-hidden"
               >
                 <div className={`w-full h-2 ${CATEGORY_BG_COLORS[category.id] || "bg-gray-500"}`} />
                 <div className="px-5 pb-5 pt-3 flex flex-col items-center gap-3">
@@ -157,79 +120,54 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Trending Products */}
-      {popularProducts.length > 0 && (
-        <section className="py-16 bg-gray-50">
+      {trendingProducts.length > 0 && (
+        <Reveal as="section" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  人気プロダクト
-                </h2>
-                <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                  人気
-                </span>
-              </div>
-              <Link
-                href="/products?sort=popular"
-                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium text-sm"
-              >
-                すべて見る
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+            <SectionHeading
+              eyebrow="Trending"
+              title="人気プロダクト"
+              badge={{ label: "人気", color: "amber" }}
+              href="/products?sort=popular"
+            />
             {/* Mobile: horizontal scroll / Desktop: grid */}
             <div className="flex gap-5 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 scrollbar-thin">
-              {popularProducts.map((product) => (
+              {trendingProducts.map((product) => (
                 <div key={product.id} className="min-w-[280px] md:min-w-0">
                   <ProductCard product={product} />
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* New Arrivals */}
-      <section className={`py-16 ${popularProducts.length > 0 ? "bg-white" : "bg-gray-50"}`}>
+      <Reveal as="section" className={`py-16 ${trendingProducts.length > 0 ? "bg-white" : "bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-gray-900">
-                新着プロダクト
-              </h2>
-              <span className="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                NEW
-              </span>
-            </div>
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium text-sm"
-            >
-              すべて見る
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
+          <SectionHeading
+            eyebrow="New Arrivals"
+            title="新着プロダクト"
+            badge={{ label: "NEW", color: "green" }}
+            href="/products"
+          />
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newArrivals.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </StaggerGrid>
         </div>
-      </section>
+      </Reveal>
 
       {/* Value Proposition */}
-      <section className="py-16 bg-primary-50">
+      <Reveal as="section" className="py-16 bg-primary-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-10">
-            選ばれる理由
-          </h2>
+          <div className="text-center mb-10">
+            <span className="section-eyebrow justify-center">Why SaaSマーケット</span>
+            <h2 className="section-title mx-auto mb-0">選ばれる理由</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -248,26 +186,33 @@ export default async function HomePage() {
                 desc: "日本のSaaS市場に特化。ターゲット企業に直接プロダクトを届けられます。",
               },
             ].map((item) => (
-              <div key={item.title} className="bg-white rounded-xl p-6 text-center">
-                <div className="w-12 h-12 mx-auto bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div
+                key={item.title}
+                className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm hover:shadow-card-premium hover:-translate-y-1 transition-all"
+              >
+                <div className="w-14 h-14 mx-auto bg-gradient-to-br from-primary-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-900 to-primary-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Reveal
+        as="section"
+        className="py-24 bg-gradient-to-br from-gray-900 via-primary-900 to-fuchsia-950 text-white relative overflow-hidden"
+      >
+        <div className="bg-grid-white absolute inset-0 opacity-40" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-brand-tight mb-5 leading-[1.1]">
                 あなたのSaaSを
                 <br />
                 掲載しませんか？
@@ -277,7 +222,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-500 transition-colors"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-fuchsia-500 text-white font-semibold px-7 py-3.5 rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-fuchsia-900/40"
               >
                 無料で出品を始める
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +251,7 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
     </div>
   );
 }
