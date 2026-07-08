@@ -110,11 +110,20 @@
   }
 
   .section-title {
-    @apply text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4;
+    @apply text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-brand-tight mb-4;
   }
 
   .section-subtitle {
     @apply text-lg text-gray-600 max-w-2xl leading-relaxed;
+  }
+
+  .section-eyebrow {
+    @apply inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary-600 mb-2;
+  }
+
+  .section-eyebrow::before {
+    content: "";
+    @apply w-4 h-0.5 bg-primary-500 rounded-full;
   }
 
   /* Navigation link with animated underline */
@@ -330,5 +339,14 @@
   /* Text gradient */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400;
+  }
+
+  /* CSS-only grid texture (no image request, LCP-safe) for dark hero backgrounds */
+  .bg-grid-white {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: 3.5rem 3.5rem;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
   }
 }
