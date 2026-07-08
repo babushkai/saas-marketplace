@@ -110,7 +110,7 @@
   }
 
   .section-title {
-    @apply text-2xl sm:text-3xl font-bold text-gray-900 tracking-brand-tight mb-4;
+    @apply text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-brand-tight mb-4;
   }
 
   .section-subtitle {
@@ -118,7 +118,12 @@
   }
 
   .section-eyebrow {
-    @apply inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary-600 mb-2;
+    @apply inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary-600 mb-2;
+  }
+
+  .section-eyebrow::before {
+    content: "";
+    @apply w-4 h-0.5 bg-primary-500 rounded-full;
   }
 
   /* Navigation link with animated underline */
