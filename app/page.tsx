@@ -4,7 +4,6 @@ import { StaggerGrid } from "@/components/ui/StaggerGrid";
 import { Reveal } from "@/components/ui/Reveal";
 import { Hero } from "@/components/home/Hero";
 import { SectionHeading } from "@/components/home/SectionHeading";
-import { TrustBanner } from "@/components/home/TrustBanner";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getPopularProducts, getNewArrivals } from "@/lib/products";
 import { HOMEPAGE_CATEGORIES, PRODUCT_CATEGORIES } from "@/lib/categories";
@@ -84,15 +83,16 @@ export default async function HomePage() {
 
   return (
     <div>
-      <Hero totalProducts={totalProducts} featuredProducts={heroFeatured} />
-
-      {/* Trust Banner */}
-      <TrustBanner totalProducts={totalProducts} categoryCount={PRODUCT_CATEGORIES.length} />
+      <Hero
+        totalProducts={totalProducts}
+        categoryCount={PRODUCT_CATEGORIES.length}
+        featuredProducts={heroFeatured}
+      />
 
       {/* Categories Section */}
       <Reveal as="section" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="カテゴリーから探す" href="/products" />
+          <SectionHeading eyebrow="Categories" title="カテゴリーから探す" href="/products" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {HOMEPAGE_CATEGORIES.map((category) => (
               <Link
@@ -127,6 +127,7 @@ export default async function HomePage() {
         <Reveal as="section" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionHeading
+              eyebrow="Trending"
               title="人気プロダクト"
               badge={{ label: "人気", color: "amber" }}
               href="/products?sort=popular"
@@ -147,6 +148,7 @@ export default async function HomePage() {
       <Reveal as="section" className={`py-16 ${trendingProducts.length > 0 ? "bg-white" : "bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading
+            eyebrow="New Arrivals"
             title="新着プロダクト"
             badge={{ label: "NEW", color: "green" }}
             href="/products"
@@ -162,9 +164,10 @@ export default async function HomePage() {
       {/* Value Proposition */}
       <Reveal as="section" className="py-16 bg-primary-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="section-title text-center mx-auto mb-10">
-            選ばれる理由
-          </h2>
+          <div className="text-center mb-10">
+            <span className="section-eyebrow justify-center">Why SaaSマーケット</span>
+            <h2 className="section-title mx-auto mb-0">選ばれる理由</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -185,14 +188,14 @@ export default async function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm hover:shadow-card-premium transition-shadow"
+                className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm hover:shadow-card-premium hover:-translate-y-1 transition-all"
               >
-                <div className="w-12 h-12 mx-auto bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 mx-auto bg-gradient-to-br from-primary-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
               </div>
             ))}
@@ -201,11 +204,15 @@ export default async function HomePage() {
       </Reveal>
 
       {/* CTA Section */}
-      <Reveal as="section" className="py-20 bg-gradient-to-br from-gray-900 to-primary-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Reveal
+        as="section"
+        className="py-24 bg-gradient-to-br from-gray-900 via-primary-900 to-fuchsia-950 text-white relative overflow-hidden"
+      >
+        <div className="bg-grid-white absolute inset-0 opacity-40" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-brand-tight mb-5 leading-[1.1]">
                 あなたのSaaSを
                 <br />
                 掲載しませんか？
@@ -215,7 +222,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-500 transition-colors"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-fuchsia-500 text-white font-semibold px-7 py-3.5 rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-fuchsia-900/40"
               >
                 無料で出品を始める
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
