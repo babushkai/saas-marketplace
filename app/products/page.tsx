@@ -264,15 +264,15 @@ function ProductsLoading() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[...Array(6)].map((_, i) => (
-        <div key={i} className="card overflow-hidden animate-pulse">
-          <div className="h-40 bg-gray-100" />
+        <div key={i} className="card overflow-hidden">
+          <div className="h-40 bg-gray-100 skeleton" />
           <div className="p-4 space-y-3">
-            <div className="h-4 bg-gray-100 rounded w-16" />
-            <div className="h-5 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-100 rounded w-full" />
+            <div className="h-4 bg-gray-100 skeleton rounded w-16" />
+            <div className="h-5 bg-gray-200 skeleton rounded w-3/4" />
+            <div className="h-4 bg-gray-100 skeleton rounded w-full" />
             <div className="pt-3 border-t border-gray-100 flex justify-between">
-              <div className="h-5 bg-gray-100 rounded w-16" />
-              <div className="h-5 bg-gray-100 rounded w-4" />
+              <div className="h-5 bg-gray-100 skeleton rounded w-16" />
+              <div className="h-5 bg-gray-100 skeleton rounded w-4" />
             </div>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             <h1 className="text-3xl font-bold text-gray-900">
               {categoryName}
             </h1>
-            <span className="bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1 rounded-full">
+            <span className="bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1 rounded-full ring-1 ring-primary-100">
               {totalCount}件
             </span>
           </div>
@@ -322,7 +322,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <h1 className="text-3xl font-bold text-gray-900">
                 プロダクト一覧
               </h1>
-              <span className="bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1 rounded-full">
+              <span className="bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1 rounded-full ring-1 ring-primary-100">
                 {totalCount}件
               </span>
             </div>
@@ -367,7 +367,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   {searchQuery && (
                     <Link
                       href={buildFilterUrl(searchParams, "q")}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-100 text-primary-800 rounded-full text-xs font-medium hover:bg-primary-200 transition-colors"
+                      className="chip-removable-primary"
                     >
                       「{searchQuery}」
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,7 +378,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   {categoryName && (
                     <Link
                       href={buildFilterUrl(searchParams, "category")}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors"
+                      className="chip-removable"
                     >
                       {categoryName}
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,7 +390,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     <Link
                       key={p}
                       href={buildFilterUrl(searchParams, "pricing", p)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors"
+                      className="chip-removable"
                     >
                       {p === "free" ? "無料" : p === "freemium" ? "フリーミアム" : p === "paid" ? "有料" : "要問合せ"}
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -433,8 +433,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           {/* Empty State */}
           {products.length === 0 && (
             <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-50 rounded-2xl shadow-inner mb-6">
-                <span className="text-5xl">{searchQuery ? "🔍" : "📦"}</span>
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl shadow-inner ring-1 ring-gray-100 mb-6">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {searchQuery ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                  )}
+                </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 見つかりませんでした
