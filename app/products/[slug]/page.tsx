@@ -242,8 +242,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* Quick Info Panel */}
-          <div className="card p-5">
-            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="card p-5 sm:p-6">
+            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-5">
               <div>
                 <dt className="text-xs text-gray-500 font-medium uppercase tracking-wider">カテゴリー</dt>
                 <dd className="mt-1">
@@ -287,10 +287,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </h2>
                 <Link
                   href={`/products?category=${product.category}`}
-                  className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                  className="group text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
                 >
                   もっと見る
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-200 ease-snappy group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -314,7 +319,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {/* Overlapping avatar */}
                 <div className="-mt-8 mb-4">
                   <Link href={`/sellers/${seller.username}`} className="block group">
-                    <div className="relative w-16 h-16 bg-white rounded-full border-4 border-white shadow-sm overflow-hidden">
+                    <div className="relative w-16 h-16 bg-white rounded-full border-4 border-white shadow-md ring-1 ring-black/5 overflow-hidden transition-transform duration-300 ease-snappy group-hover:scale-105">
                       {seller.avatar_url ? (
                         <Image
                           src={seller.avatar_url}
@@ -394,10 +399,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Inquiry Form — with gradient header */}
           <div className="card overflow-hidden sticky top-24">
             <div className="bg-gradient-to-br from-primary-50 to-indigo-50 px-6 py-4 border-b border-primary-100">
-              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2.5">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/70 shadow-sm flex-shrink-0">
+                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </span>
                 お問い合わせ
               </h2>
               <p className="text-sm text-primary-700/70 mt-1">導入検討中ですか？ 気軽にご相談ください。</p>

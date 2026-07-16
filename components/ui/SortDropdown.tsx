@@ -30,7 +30,7 @@ export function SortDropdown() {
         id="sort"
         value={currentSort}
         onChange={handleSortChange}
-        className="input py-1.5 px-3 text-sm min-w-[140px]"
+        className="input py-1.5 px-3 text-sm min-w-[140px] cursor-pointer hover:border-gray-400 transition-colors duration-200 ease-snappy"
       >
         {sortOptions.map((option) => (
           <option key={option.value} value={option.value}>
