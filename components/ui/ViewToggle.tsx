@@ -30,7 +30,7 @@ export function ViewToggle({ currentView }: ViewToggleProps) {
     <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
       <button
         onClick={() => setView("grid")}
-        className={`p-2 transition-colors ${
+        className={`p-2 transition-colors duration-200 ease-snappy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset ${
           currentView === "grid"
             ? "bg-primary-50 text-primary-600"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
@@ -44,7 +44,7 @@ export function ViewToggle({ currentView }: ViewToggleProps) {
       </button>
       <button
         onClick={() => setView("list")}
-        className={`p-2 transition-colors ${
+        className={`p-2 transition-colors duration-200 ease-snappy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset ${
           currentView === "list"
             ? "bg-primary-50 text-primary-600"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"

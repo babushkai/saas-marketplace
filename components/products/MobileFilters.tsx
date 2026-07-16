@@ -27,7 +27,7 @@ export function MobileFilters({ selectedCategory, selectedPricing, categoryCount
         </svg>
         フィルター
         {activeFilterCount > 0 && (
-          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-primary-600 text-white rounded-full">
+          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-primary-600 text-white rounded-full shadow-sm animate-scale-in">
             {activeFilterCount}
           </span>
         )}

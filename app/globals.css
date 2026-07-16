@@ -74,6 +74,11 @@
     @apply transition-shadow duration-150 hover:shadow-md hover:border-gray-200;
   }
 
+  /* Shared "lift" hover interaction — cards, tiles, any clickable content block */
+  .card-interactive {
+    @apply transition-all duration-300 ease-snappy hover:-translate-y-1 hover:shadow-card-premium-hover hover:border-primary-200;
+  }
+
   /* Form group */
   .form-group {
     @apply space-y-1.5;
@@ -140,7 +145,7 @@
     height: 2px;
     width: 0;
     border-radius: 9999px;
-    @apply bg-primary-500 transition-all duration-200;
+    @apply bg-primary-500 transition-all duration-300 ease-snappy;
   }
 
   .nav-link:hover::after {
@@ -157,12 +162,41 @@
 
   /* Footer link */
   .footer-link {
-    @apply text-sm text-gray-500 hover:text-gray-900 transition-colors duration-150;
+    @apply inline-flex text-sm text-gray-500 hover:text-gray-900 transition-all duration-200 ease-snappy hover:translate-x-0.5;
   }
 
   /* Divider */
   .divider {
     @apply border-t border-gray-100;
+  }
+
+  /* Removable filter chip (product listing filter bar) */
+  .chip-removable {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors duration-150 bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+
+  .chip-removable-primary {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors duration-150 bg-primary-100 text-primary-800 hover:bg-primary-200;
+  }
+
+  /* Shimmering loading skeleton block (replaces flat animate-pulse) — pair with a bg-gray-* class */
+  .skeleton {
+    @apply relative overflow-hidden rounded;
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      animation: none;
+    }
   }
 }
 
@@ -284,6 +318,12 @@
   @media (prefers-reduced-motion: reduce) {
     .animate-fade-up {
       animation: none;
+    }
+  }
+
+  @keyframes skeleton-shimmer {
+    100% {
+      transform: translateX(100%);
     }
   }
 

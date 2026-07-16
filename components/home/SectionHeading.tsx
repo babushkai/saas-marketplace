@@ -38,10 +38,15 @@ export function SectionHeading({
       {href && (
         <Link
           href={href}
-          className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-1 shrink-0"
+          className="group text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-1 shrink-0"
         >
           {ctaLabel}
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4 transition-transform duration-200 ease-snappy group-hover:translate-x-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </Link>
