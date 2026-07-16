@@ -98,11 +98,11 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/products?category=${category.id}`}
-                className="group flex flex-col items-center gap-3 rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-card-premium hover:-translate-y-1 transition-all duration-200 overflow-hidden"
+                className="group card-interactive flex flex-col items-center gap-3 rounded-xl border border-gray-100 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               >
                 <div className={`w-full h-2 ${CATEGORY_BG_COLORS[category.id] || "bg-gray-500"}`} />
                 <div className="px-5 pb-5 pt-3 flex flex-col items-center gap-3">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${CATEGORY_COLORS[category.id] || "bg-gray-100 text-gray-600"} group-hover:scale-110 transition-transform`}>
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-black/5 ${CATEGORY_COLORS[category.id] || "bg-gray-100 text-gray-600"} group-hover:scale-110 transition-transform duration-300 ease-snappy`}>
                     <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CATEGORY_ICONS[category.id] || "M4 6h16M4 12h16M4 18h16"} />
                     </svg>
@@ -188,9 +188,9 @@ export default async function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm hover:shadow-card-premium hover:-translate-y-1 transition-all"
+                className="card-interactive bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm"
               >
-                <div className="w-14 h-14 mx-auto bg-gradient-to-br from-primary-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+                <div className="w-14 h-14 mx-auto bg-gradient-to-br from-primary-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mb-5 shadow-lg ring-1 ring-black/5">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
                   </svg>
@@ -237,8 +237,8 @@ export default async function HomePage() {
                   { step: "2", title: "プロダクト情報を入力", desc: "名前・説明・料金体系を設定" },
                   { step: "3", title: "公開", desc: "審査なし、即時公開" },
                 ].map((item) => (
-                  <div key={item.step} className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-                    <span className="flex-shrink-0 w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-sm font-bold">
+                  <div key={item.step} className="flex items-start gap-4 bg-white/5 hover:bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 transition-colors duration-300 ease-snappy">
+                    <span className="flex-shrink-0 w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                       {item.step}
                     </span>
                     <div>

@@ -72,7 +72,7 @@ export function ProductFilters({ selectedCategory, selectedPricing, categoryCoun
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className="w-full text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-1 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors"
+          className="w-full text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-1 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors duration-200 ease-snappy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -100,10 +100,10 @@ export function ProductFilters({ selectedCategory, selectedPricing, categoryCoun
               <button
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center ${
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ease-snappy flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset ${
                   isActive
                     ? "bg-primary-50 text-primary-700 font-medium border-l-2 border-primary-500 pl-[calc(0.75rem-2px)]"
-                    : "text-gray-600 hover:bg-gray-50"
+                    : "text-gray-600 hover:bg-gray-50 hover:translate-x-0.5"
                 }`}
               >
                 <span className="flex-1">{category.name}</span>
@@ -140,7 +140,7 @@ export function ProductFilters({ selectedCategory, selectedPricing, categoryCoun
                 type="checkbox"
                 checked={localPricing.includes(pricing.id)}
                 onChange={(e) => handlePricingChange(pricing.id, e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                className="w-4 h-4 rounded border-gray-300 text-primary-600 cursor-pointer transition-shadow focus:ring-2 focus:ring-primary-500/40 focus:ring-offset-0"
               />
               <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
                 {pricing.name}

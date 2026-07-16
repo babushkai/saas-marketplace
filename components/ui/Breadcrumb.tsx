@@ -16,7 +16,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
         <li className="flex items-center">
           <Link
             href="/"
-            className="hover:text-primary-600 transition-colors flex items-center gap-1"
+            className="hover:text-primary-600 transition-colors duration-200 ease-snappy flex items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -32,7 +32,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
             <svg
-              className="w-4 h-4 mx-1 text-gray-400"
+              className="w-4 h-4 mx-1 text-gray-400 opacity-60"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -47,12 +47,12 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
             {item.href ? (
               <Link
                 href={item.href}
-                className="hover:text-primary-600 transition-colors"
+                className="hover:text-primary-600 transition-colors duration-200 ease-snappy rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className="text-gray-900 font-medium">{item.label}</span>
+              <span className="text-gray-900 font-semibold">{item.label}</span>
             )}
           </li>
         ))}

@@ -27,6 +27,10 @@ const config: Config = {
         "input-focus": "0 0 0 3px rgba(79, 110, 247, 0.12)",
         "hero-glow": "0 0 120px 20px rgba(79, 110, 247, 0.25)",
         "card-premium": "0 8px 30px -8px rgba(34, 48, 118, 0.18)",
+        "card-premium-hover": "0 16px 40px -10px rgba(34, 48, 118, 0.28)",
+      },
+      transitionTimingFunction: {
+        snappy: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       colors: {
         primary: {

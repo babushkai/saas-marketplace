@@ -33,7 +33,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
     return (
       <Link
         href={`/products/${product.slug}`}
-        className="group p-4 rounded-xl border border-gray-200 hover:border-primary-200 hover:shadow-sm transition-all"
+        className="group card-interactive block p-4 rounded-xl border border-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
       >
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
@@ -65,8 +65,11 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/products/${product.slug}`} className="block group">
-      <div className="card h-full overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-200">
+    <Link
+      href={`/products/${product.slug}`}
+      className="block group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+    >
+      <div className="card card-interactive h-full overflow-hidden">
         {/* Cover zone */}
         <div className="relative h-40 overflow-hidden">
           {screenshot ? (
@@ -78,7 +81,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 unoptimized
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
             </>
           ) : (
             <div className={`w-full h-full ${getCategoryColor(product.category).gradient} flex items-center justify-center`}>
@@ -103,17 +106,17 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-1.5">
             {productNew && (
-              <span className="bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+              <span className="bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md ring-1 ring-white/40">
                 新着
               </span>
             )}
             {product.pricing_type === "free" && (
-              <span className="bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+              <span className="bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md ring-1 ring-white/40">
                 無料
               </span>
             )}
             {viewCount >= 10 && (
-              <span className="bg-amber-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+              <span className="bg-amber-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md ring-1 ring-white/40">
                 人気
               </span>
             )}

@@ -44,7 +44,7 @@ export function HeroSearch() {
             key={tag}
             type="button"
             onClick={() => router.push(`/products?q=${encodeURIComponent(tag)}`)}
-            className="text-xs text-white/80 bg-white/15 hover:bg-white/25 px-3 py-1 rounded-full transition-colors"
+            className="text-xs text-white/80 bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 px-3 py-1 rounded-full transition-all duration-200 ease-snappy"
           >
             {tag}
           </button>
