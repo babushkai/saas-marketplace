@@ -361,3 +361,36 @@ export function Header() {
     </header>
   );
 }
+
+/**
+ * Static Suspense fallback for <Header/> — it has no hooks (no useSearchParams),
+ * so it prerenders on statically-generated pages while the real Header (which
+ * calls useSearchParams and therefore requires a Suspense boundary) hydrates in.
+ * Matches the real header's h-16 shape to avoid layout shift.
+ */
+export function HeaderSkeleton() {
+  return (
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center gap-8">
+            <span className="text-xl font-bold text-primary-600">SaaSマーケット</span>
+            <nav className="hidden md:flex items-center gap-6">
+              <span className="nav-link">プロダクト一覧</span>
+              <span className="nav-link">料金プラン</span>
+            </nav>
+          </div>
+          <div className="hidden md:block flex-1 max-w-xs mx-6">
+            <div className="h-9 bg-gray-50 border border-gray-200 rounded-lg" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-4">
+              <div className="h-4 w-16 bg-gray-100 rounded" />
+              <div className="h-9 w-24 bg-gray-100 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
