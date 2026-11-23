@@ -192,7 +192,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
 
         {/* CTA */}
-        <div className="mt-12 p-8 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl">
+        <div className="mt-12 p-8 bg-primary-50 rounded-xl">
           <h3 className="text-xl font-bold text-gray-900 mb-3">
             SaaSを探していますか？
           </h3>

@@ -197,7 +197,7 @@ export default async function CategoriesPage() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <div className="card p-8 bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
+          <div className="card p-8 bg-primary-50 border-primary-200">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               お探しのカテゴリーがありませんか？
             </h2>

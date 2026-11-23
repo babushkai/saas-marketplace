@@ -78,11 +78,10 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                 src={screenshot}
                 alt={`${product.name} screenshot`}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="object-cover"
                 unoptimized
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-            </>
+                          </>
           ) : (
             <div className={`w-full h-full ${getCategoryColor(product.category).gradient} flex items-center justify-center`}>
               {product.logo_url ? (
