@@ -398,7 +398,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Inquiry Form — with gradient header */}
           <div className="card overflow-hidden sticky top-24">
-            <div className="bg-gradient-to-br from-primary-50 to-indigo-50 px-6 py-4 border-b border-primary-100">
+            <div className="bg-primary-50 px-6 py-4 border-b border-primary-100">
               <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2.5">
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/70 shadow-sm flex-shrink-0">
                   <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

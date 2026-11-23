@@ -92,23 +92,23 @@ export default async function HomePage() {
       {/* Categories Section */}
       <Reveal as="section" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading eyebrow="Categories" title="カテゴリーから探す" href="/products" />
+          <SectionHeading title="カテゴリーから探す" href="/products" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {HOMEPAGE_CATEGORIES.map((category) => (
               <Link
                 key={category.id}
                 href={`/products?category=${category.id}`}
-                className="group card-interactive flex flex-col items-center gap-3 rounded-xl border border-gray-100 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className="group card-interactive flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               >
                 <div className={`w-full h-2 ${CATEGORY_BG_COLORS[category.id] || "bg-gray-500"}`} />
                 <div className="px-5 pb-5 pt-3 flex flex-col items-center gap-3">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-black/5 ${CATEGORY_COLORS[category.id] || "bg-gray-100 text-gray-600"} group-hover:scale-110 transition-transform duration-300 ease-snappy`}>
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${CATEGORY_COLORS[category.id] || "bg-gray-100 text-gray-600"}`}>
                     <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CATEGORY_ICONS[category.id] || "M4 6h16M4 12h16M4 18h16"} />
                     </svg>
                   </div>
                   <div className="text-center">
-                    <span className="font-medium text-gray-900 text-sm">
+                    <span className="font-medium text-gray-900 text-sm group-hover:text-primary-600">
                       {category.name}
                     </span>
                     <span className="block text-xs text-gray-400 mt-0.5">
@@ -127,7 +127,6 @@ export default async function HomePage() {
         <Reveal as="section" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionHeading
-              eyebrow="Trending"
               title="人気プロダクト"
               badge={{ label: "人気", color: "amber" }}
               href="/products?sort=popular"
@@ -148,7 +147,6 @@ export default async function HomePage() {
       <Reveal as="section" className={`py-16 ${trendingProducts.length > 0 ? "bg-white" : "bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="New Arrivals"
             title="新着プロダクト"
             badge={{ label: "NEW", color: "green" }}
             href="/products"
@@ -162,11 +160,10 @@ export default async function HomePage() {
       </Reveal>
 
       {/* Value Proposition */}
-      <Reveal as="section" className="py-16 bg-primary-50">
+      <Reveal as="section" className="py-16 bg-gray-50 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <span className="section-eyebrow justify-center">Why SaaSマーケット</span>
-            <h2 className="section-title mx-auto mb-0">選ばれる理由</h2>
+            <h2 className="section-title mx-auto mb-0">SaaSマーケットの特長</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -188,11 +185,11 @@ export default async function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="card-interactive bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm"
+                className="bg-white rounded-xl p-8 border border-gray-200"
               >
-                <div className="w-14 h-14 mx-auto bg-gradient-to-br from-primary-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mb-5 shadow-lg ring-1 ring-black/5">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+                <div className="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={item.icon} />
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
@@ -206,23 +203,22 @@ export default async function HomePage() {
       {/* CTA Section */}
       <Reveal
         as="section"
-        className="py-24 bg-gradient-to-br from-gray-900 via-primary-900 to-fuchsia-950 text-white relative overflow-hidden"
+        className="py-16 md:py-20 bg-primary-700 text-white"
       >
-        <div className="bg-grid-white absolute inset-0 opacity-40" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-brand-tight mb-5 leading-[1.1]">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
                 あなたのSaaSを
                 <br />
                 掲載しませんか？
               </h2>
-              <p className="text-gray-300 mb-8 text-lg">
+              <p className="text-primary-100 mb-8">
                 日本のSaaSマーケットで、あなたのプロダクトを多くの企業にアピールしましょう。
               </p>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-fuchsia-500 text-white font-semibold px-7 py-3.5 rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-fuchsia-900/40"
+                className="inline-flex items-center gap-2 bg-white text-primary-700 font-bold px-7 py-3.5 rounded-lg hover:bg-primary-50 transition-colors"
               >
                 無料で出品を始める
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,13 +233,13 @@ export default async function HomePage() {
                   { step: "2", title: "プロダクト情報を入力", desc: "名前・説明・料金体系を設定" },
                   { step: "3", title: "公開", desc: "審査なし、即時公開" },
                 ].map((item) => (
-                  <div key={item.step} className="flex items-start gap-4 bg-white/5 hover:bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 transition-colors duration-300 ease-snappy">
-                    <span className="flex-shrink-0 w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                  <div key={item.step} className="flex items-start gap-4 bg-white/10 rounded-lg p-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-white text-primary-700 rounded-full flex items-center justify-center text-sm font-bold">
                       {item.step}
                     </span>
                     <div>
                       <p className="font-semibold">{item.title}</p>
-                      <p className="text-sm text-gray-400">{item.desc}</p>
+                      <p className="text-sm text-primary-100">{item.desc}</p>
                     </div>
                   </div>
                 ))}

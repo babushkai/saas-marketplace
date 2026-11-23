@@ -33,18 +33,18 @@ interface CategoryColor {
 }
 
 const CATEGORY_COLOR_MAP: Record<string, CategoryColor> = {
-  marketing: { bg: "bg-orange-50", text: "text-orange-700", gradient: "bg-gradient-to-br from-orange-100 to-amber-50" },
-  sales: { bg: "bg-blue-50", text: "text-blue-700", gradient: "bg-gradient-to-br from-blue-100 to-sky-50" },
-  finance: { bg: "bg-emerald-50", text: "text-emerald-700", gradient: "bg-gradient-to-br from-emerald-100 to-teal-50" },
-  hr: { bg: "bg-purple-50", text: "text-purple-700", gradient: "bg-gradient-to-br from-purple-100 to-violet-50" },
-  productivity: { bg: "bg-amber-50", text: "text-amber-700", gradient: "bg-gradient-to-br from-amber-100 to-yellow-50" },
-  communication: { bg: "bg-cyan-50", text: "text-cyan-700", gradient: "bg-gradient-to-br from-cyan-100 to-sky-50" },
-  development: { bg: "bg-indigo-50", text: "text-indigo-700", gradient: "bg-gradient-to-br from-indigo-100 to-blue-50" },
-  design: { bg: "bg-pink-50", text: "text-pink-700", gradient: "bg-gradient-to-br from-pink-100 to-rose-50" },
-  other: { bg: "bg-gray-50", text: "text-gray-700", gradient: "bg-gradient-to-br from-gray-100 to-slate-50" },
+  marketing: { bg: "bg-orange-50", text: "text-orange-700", gradient: "bg-orange-50" },
+  sales: { bg: "bg-blue-50", text: "text-blue-700", gradient: "bg-blue-50" },
+  finance: { bg: "bg-emerald-50", text: "text-emerald-700", gradient: "bg-emerald-50" },
+  hr: { bg: "bg-purple-50", text: "text-purple-700", gradient: "bg-purple-50" },
+  productivity: { bg: "bg-amber-50", text: "text-amber-700", gradient: "bg-amber-50" },
+  communication: { bg: "bg-cyan-50", text: "text-cyan-700", gradient: "bg-cyan-50" },
+  development: { bg: "bg-indigo-50", text: "text-indigo-700", gradient: "bg-indigo-50" },
+  design: { bg: "bg-pink-50", text: "text-pink-700", gradient: "bg-pink-50" },
+  other: { bg: "bg-gray-50", text: "text-gray-700", gradient: "bg-gray-50" },
 };
 
-const DEFAULT_COLOR: CategoryColor = { bg: "bg-gray-50", text: "text-gray-700", gradient: "bg-gradient-to-br from-gray-100 to-slate-50" };
+const DEFAULT_COLOR: CategoryColor = { bg: "bg-gray-50", text: "text-gray-700", gradient: "bg-gray-50" };
 
 export function getCategoryColor(id: string): CategoryColor {
   return CATEGORY_COLOR_MAP[id] ?? DEFAULT_COLOR;

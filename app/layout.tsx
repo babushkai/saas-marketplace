@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | SaaSマーケット",
   },
   description:
-    "日本発のSaaS製品・サービスを探せるマーケットプレイス。500以上のSaaSツールから、あなたのビジネスに最適なツールを見つけましょう。無料で比較・検討できます。",
+    "日本発のSaaS製品・サービスを探せるマーケットプレイス。国内のSaaSツールを比較・検討して、あなたのビジネスに合うツールを見つけましょう。",
   keywords: [
     "SaaS",
     "サース",
@@ -57,13 +57,13 @@ export const metadata: Metadata = {
     siteName: "SaaSマーケット",
     title: "SaaSマーケット | 日本のSaaS・サービスを見つけよう",
     description:
-      "日本発のSaaS製品・サービスを探せるマーケットプレイス。500以上のSaaSツールから、あなたのビジネスに最適なツールを見つけましょう。",
+      "日本発のSaaS製品・サービスを探せるマーケットプレイス。国内のSaaSツールを比較・検討して、あなたのビジネスに合うツールを見つけましょう。",
   },
   twitter: {
     card: "summary_large_image",
     title: "SaaSマーケット | 日本のSaaS・サービスを見つけよう",
     description:
-      "日本発のSaaS製品・サービスを探せるマーケットプレイス。500以上のSaaSツールから、あなたのビジネスに最適なツールを見つけましょう。",
+      "日本発のSaaS製品・サービスを探せるマーケットプレイス。国内のSaaSツールを比較・検討して、あなたのビジネスに合うツールを見つけましょう。",
     creator: "@saas_market_jp",
   },
   robots: {
