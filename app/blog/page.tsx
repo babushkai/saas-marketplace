@@ -44,7 +44,7 @@ export default function BlogPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => (
             <article key={post.slug} className="card overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+              <div className="h-48 bg-primary-600 flex items-center justify-center">
                 <span className="text-white/80 text-6xl font-bold">
                   {post.title.charAt(0)}
                 </span>
@@ -94,7 +94,7 @@ export default function BlogPage() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <div className="card p-8 bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
+          <div className="card p-8 bg-primary-50 border-primary-200">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               SaaSを探していますか？
             </h2>

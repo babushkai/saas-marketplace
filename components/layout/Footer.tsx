@@ -4,7 +4,6 @@ import { NewsletterForm } from "./NewsletterForm";
 export function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
-      <div className="h-1 bg-gradient-to-r from-primary-500 to-primary-700" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
         {/* Newsletter */}
@@ -81,7 +80,7 @@ export function Footer() {
                 href="https://github.com/babushkai/saas-marketplace"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 ease-snappy hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 ease-snappy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                 aria-label="GitHub"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -92,7 +91,7 @@ export function Footer() {
                 href="https://twitter.com/babushkai"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 ease-snappy hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 ease-snappy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                 aria-label="X (Twitter)"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
