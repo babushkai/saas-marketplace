@@ -18,8 +18,9 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getViewCount } from "@/lib/products";
 import type { Product, Seller } from "@/types/database";
+import { SITE_URL } from "@/lib/site";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
+const BASE_URL = SITE_URL;
 
 interface ProductPageProps {
   params: { slug: string };

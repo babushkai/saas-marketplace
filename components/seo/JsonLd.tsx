@@ -1,5 +1,7 @@
 "use client";
 
+import { SITE_URL } from "@/lib/site";
+
 export interface OrganizationJsonLdProps {
   name?: string;
   url?: string;
@@ -9,8 +11,8 @@ export interface OrganizationJsonLdProps {
 
 export function OrganizationJsonLd({
   name = "SaaSマーケット",
-  url = "https://saas-market.jp",
-  logo = "https://saas-market.jp/logo.png",
+  url = SITE_URL,
+  logo,
   description = "日本発のSaaS製品・サービスを探せるマーケットプレイス",
 }: OrganizationJsonLdProps) {
   const jsonLd = {
@@ -47,7 +49,7 @@ export interface WebsiteJsonLdProps {
 
 export function WebsiteJsonLd({
   name = "SaaSマーケット",
-  url = "https://saas-market.jp",
+  url = SITE_URL,
   description = "日本発のSaaS製品・サービスを探せるマーケットプレイス",
 }: WebsiteJsonLdProps) {
   const jsonLd = {
@@ -147,7 +149,7 @@ export function BlogPostJsonLd({
     headline: title,
     description,
     url,
-    image: image || "https://saas-market.jp/og-image.png",
+    image: image || `${SITE_URL}/opengraph-image`,
     datePublished,
     dateModified: dateModified || datePublished,
     author: {
@@ -157,10 +159,7 @@ export function BlogPostJsonLd({
     publisher: {
       "@type": "Organization",
       name: "SaaSマーケット",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://saas-market.jp/logo.png",
-      },
+      url: SITE_URL,
     },
     mainEntityOfPage: {
       "@type": "WebPage",
