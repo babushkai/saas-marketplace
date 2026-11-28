@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Verify product exists
     const { data: product, error: productError } = await supabase
       .from("products")
-      .select("id, seller_id")
+      .select("*")
       .eq("id", product_id)
       .eq("is_published", true)
       .single();
@@ -46,6 +46,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "プロダクトが見つかりません" },
         { status: 404 }
+      );
+    }
+
+    // Editorial listings have no vendor to receive the message
+    if (product.listing_status === "unclaimed") {
+      return NextResponse.json(
+        { error: "このプロダクトは現在お問い合わせを受け付けていません。公式サイトからお問い合わせください" },
+        { status: 409 }
       );
     }
 
