@@ -28,6 +28,8 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
   const viewCount = hasViewCount(product) ? product.view_count : 0;
   const categoryName = getCategoryName(product.category);
   const screenshot = product.screenshots?.[0];
+  const isUnclaimed = product.listing_status === "unclaimed";
+  const logoUrl = isUnclaimed ? null : product.logo_url;
 
   if (compact) {
     return (
@@ -37,9 +39,9 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
       >
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-            {product.logo_url ? (
+            {logoUrl ? (
               <Image
-                src={product.logo_url}
+                src={logoUrl}
                 alt={product.name}
                 fill
                 className="object-contain p-0.5"
@@ -84,10 +86,10 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                           </>
           ) : (
             <div className={`w-full h-full ${getCategoryColor(product.category).gradient} flex items-center justify-center`}>
-              {product.logo_url ? (
+              {logoUrl ? (
                 <div className="relative w-20 h-20 bg-white rounded-2xl shadow-lg overflow-hidden p-2">
                   <Image
-                    src={product.logo_url}
+                    src={logoUrl}
                     alt={product.name}
                     fill
                     className="object-contain p-1"
@@ -122,11 +124,11 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           </div>
 
           {/* Logo overlay when screenshot is shown */}
-          {screenshot && product.logo_url && (
+          {screenshot && logoUrl && (
             <div className="absolute bottom-3 left-3">
               <div className="relative w-10 h-10 bg-white rounded-lg shadow-md overflow-hidden">
                 <Image
-                  src={product.logo_url}
+                  src={logoUrl}
                   alt={product.name}
                   fill
                   className="object-contain p-0.5"
@@ -139,11 +141,14 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
         {/* Body */}
         <div className="p-4">
-          {categoryName && (
-            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
-              {categoryName}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {categoryName && (
+              <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                {categoryName}
+              </span>
+            )}
+            {isUnclaimed && <span className="text-xs text-gray-400">編集部作成</span>}
+          </div>
           <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors mt-2">
             {product.name}
           </h3>

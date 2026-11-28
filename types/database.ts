@@ -1,5 +1,6 @@
 export type PricingType = "free" | "paid" | "freemium" | "contact";
 export type PlanTier = "free" | "standard" | "pro";
+export type ListingStatus = "claimed" | "unclaimed";
 
 export interface Seller {
   id: string;
@@ -32,10 +33,24 @@ export interface Product {
   screenshots: string[];
   website_url: string | null;
   is_published: boolean;
+  /** "unclaimed" = editorial page built from public info. Optional until the claimable-listings migration runs. */
+  listing_status?: ListingStatus;
   created_at: string;
   updated_at: string;
   // Joined data
   seller?: Seller;
+}
+
+export interface ClaimRequest {
+  id: string;
+  product_id: string;
+  clerk_user_id: string;
+  email: string;
+  status: "pending" | "approved" | "rejected";
+  method: "domain_match" | "manual" | null;
+  note: string | null;
+  created_at: string;
+  decided_at: string | null;
 }
 
 export interface Inquiry {

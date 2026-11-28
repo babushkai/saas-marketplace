@@ -10,6 +10,8 @@ import { getPricingLabel, getPricingColor } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
 import { PRODUCT_CATEGORIES, getCategoryColor } from "@/lib/categories";
 import { InquiryForm } from "@/components/products/InquiryForm";
+import { ClaimCard } from "@/components/products/ClaimCard";
+import { claimableDomain } from "@/lib/claims";
 import { ShareButton } from "@/components/products/ShareButton";
 import { ViewTracker } from "@/components/products/ViewTracker";
 import { ScreenshotGallery } from "@/components/products/ScreenshotGallery";
@@ -57,7 +59,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "プロダクトが見つかりません" };
 
   const screenshots = product.screenshots ?? [];
-  const ogImage = screenshots[0] || product.logo_url || `${BASE_URL}/og-image.png`;
+  const logo = product.listing_status === "unclaimed" ? null : product.logo_url;
+  const ogImage = screenshots[0] || logo || `${BASE_URL}/opengraph-image`;
 
   return {
     title: product.name,
@@ -111,15 +114,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const categoryColor = getCategoryColor(product.category);
 
   const seller = product.seller;
+  // Editorial pages built from public info: no logo, no inquiry form, vendor can claim
+  const isUnclaimed = product.listing_status === "unclaimed";
+  const logoUrl = isUnclaimed ? null : product.logo_url;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <ProductJsonLd
         name={product.name}
         description={product.tagline}
-        image={screenshots[0] || product.logo_url || undefined}
+        image={screenshots[0] || logoUrl || undefined}
         url={`${BASE_URL}/products/${product.slug}`}
-        brand={seller?.display_name}
+        brand={isUnclaimed ? undefined : seller?.display_name}
         category={categoryName}
       />
       <BreadcrumbJsonLd
@@ -139,6 +145,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ]}
       />
 
+      {isUnclaimed && (
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          このページは<strong className="font-semibold">SaaSマーケット編集部</strong>
+          が公開情報をもとに作成しました（最終確認日：{formatDate(product.updated_at)}）。
+          最新の料金や機能は公式サイトでご確認ください。掲載内容の修正・削除のご依頼は
+          <Link href="/contact" className="underline underline-offset-2 hover:text-amber-700">お問い合わせ</Link>
+          からどうぞ。
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -153,9 +169,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className={`relative h-32 sm:h-40 ${categoryColor.gradient}`}>
                 <div className="absolute left-1/2 bottom-0 translate-y-1/2 -translate-x-1/2">
                   <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl shadow-lg overflow-hidden border-4 border-white">
-                    {product.logo_url ? (
+                    {logoUrl ? (
                       <Image
-                        src={product.logo_url}
+                        src={logoUrl}
                         alt={product.name}
                         fill
                         className="object-contain p-2"
@@ -175,10 +191,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className={`px-6 ${screenshots.length > 0 ? "pt-5" : "pt-16 sm:pt-20"}`}>
               <div className="flex flex-col sm:flex-row items-start gap-5">
                 {/* Logo (only when screenshots are present — logo isn't in the gradient banner) */}
-                {screenshots.length > 0 && product.logo_url && (
+                {screenshots.length > 0 && logoUrl && (
                   <div className="relative w-14 h-14 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
                     <Image
-                      src={product.logo_url}
+                      src={logoUrl}
                       alt={product.name}
                       fill
                       className="object-contain p-1"
@@ -265,8 +281,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <dd className="mt-1 text-sm font-medium text-gray-900">{product.price_info || "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-gray-500 font-medium uppercase tracking-wider">掲載日</dt>
-                <dd className="mt-1 text-sm font-medium text-gray-900">{formatDate(product.created_at)}</dd>
+                <dt className="text-xs text-gray-500 font-medium uppercase tracking-wider">{isUnclaimed ? "最終確認日" : "掲載日"}</dt>
+                <dd className="mt-1 text-sm font-medium text-gray-900">
+                  {formatDate(isUnclaimed ? product.updated_at : product.created_at)}
+                </dd>
               </div>
             </dl>
           </div>
@@ -312,108 +330,120 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         {/* Sidebar */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Seller Info — enhanced with gradient header band */}
-          {seller ? (
-            <div className="card overflow-visible">
-              <div className={`h-16 rounded-t-xl ${categoryColor.gradient}`} />
-              <div className="relative px-6 pb-6">
-                {/* Overlapping avatar */}
-                <div className="-mt-8 mb-4">
-                  <Link href={`/sellers/${seller.username}`} className="block group">
-                    <div className="relative w-16 h-16 bg-white rounded-full border-4 border-white shadow-md ring-1 ring-black/5 overflow-hidden transition-transform duration-300 ease-snappy group-hover:scale-105">
-                      {seller.avatar_url ? (
-                        <Image
-                          src={seller.avatar_url}
-                          alt={seller.display_name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400">
-                          {seller.display_name.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                </div>
-
-                <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">提供企業</h2>
-                <Link href={`/sellers/${seller.username}`} className="group">
-                  <p className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
-                    {seller.display_name}
-                  </p>
-                </Link>
-                {seller.company_name && (
-                  <p className="text-sm text-gray-500 mt-0.5">{seller.company_name}</p>
-                )}
-                {seller.bio && (
-                  <p className="text-sm text-gray-600 mt-3 leading-relaxed">{seller.bio}</p>
-                )}
-
-                {/* Social links */}
-                {(seller.website_url || seller.twitter_url) && (
-                  <div className="flex items-center gap-3 mt-4">
-                    {seller.website_url && (
-                      <a
-                        href={seller.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
-                        aria-label="Website"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                      </a>
-                    )}
-                    {seller.twitter_url && (
-                      <a
-                        href={seller.twitter_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
-                        aria-label="X (Twitter)"
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                        </svg>
-                      </a>
-                    )}
-                  </div>
-                )}
-
-                <Link
-                  href={`/sellers/${seller.username}`}
-                  className="mt-4 btn btn-outline w-full text-sm justify-center"
-                >
-                  プロフィールを見る
-                </Link>
-              </div>
+          {isUnclaimed ? (
+            <div className="sticky top-24">
+              <ClaimCard
+                productId={product.id}
+                productName={product.name}
+                claimDomain={claimableDomain(product.website_url)}
+              />
             </div>
           ) : (
-            <div className="card p-6 text-center">
-              <p className="text-sm text-gray-400">出品者情報なし</p>
-            </div>
-          )}
+            <>
+            {/* Seller Info — enhanced with gradient header band */}
+            {seller ? (
+              <div className="card overflow-visible">
+                <div className={`h-16 rounded-t-xl ${categoryColor.gradient}`} />
+                <div className="relative px-6 pb-6">
+                  {/* Overlapping avatar */}
+                  <div className="-mt-8 mb-4">
+                    <Link href={`/sellers/${seller.username}`} className="block group">
+                      <div className="relative w-16 h-16 bg-white rounded-full border-4 border-white shadow-md ring-1 ring-black/5 overflow-hidden transition-transform duration-300 ease-snappy group-hover:scale-105">
+                        {seller.avatar_url ? (
+                          <Image
+                            src={seller.avatar_url}
+                            alt={seller.display_name}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400">
+                            {seller.display_name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  </div>
 
-          {/* Inquiry Form — with gradient header */}
-          <div className="card overflow-hidden sticky top-24">
-            <div className="bg-primary-50 px-6 py-4 border-b border-primary-100">
-              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2.5">
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/70 shadow-sm flex-shrink-0">
-                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </span>
-                お問い合わせ
-              </h2>
-              <p className="text-sm text-primary-700/70 mt-1">導入検討中ですか？ 気軽にご相談ください。</p>
+                  <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">提供企業</h2>
+                  <Link href={`/sellers/${seller.username}`} className="group">
+                    <p className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                      {seller.display_name}
+                    </p>
+                  </Link>
+                  {seller.company_name && (
+                    <p className="text-sm text-gray-500 mt-0.5">{seller.company_name}</p>
+                  )}
+                  {seller.bio && (
+                    <p className="text-sm text-gray-600 mt-3 leading-relaxed">{seller.bio}</p>
+                  )}
+
+                  {/* Social links */}
+                  {(seller.website_url || seller.twitter_url) && (
+                    <div className="flex items-center gap-3 mt-4">
+                      {seller.website_url && (
+                        <a
+                          href={seller.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label="Website"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                          </svg>
+                        </a>
+                      )}
+                      {seller.twitter_url && (
+                        <a
+                          href={seller.twitter_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label="X (Twitter)"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  <Link
+                    href={`/sellers/${seller.username}`}
+                    className="mt-4 btn btn-outline w-full text-sm justify-center"
+                  >
+                    プロフィールを見る
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="card p-6 text-center">
+                <p className="text-sm text-gray-400">出品者情報なし</p>
+              </div>
+            )}
+
+            {/* Inquiry Form — with gradient header */}
+            <div className="card overflow-hidden sticky top-24">
+              <div className="bg-primary-50 px-6 py-4 border-b border-primary-100">
+                <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2.5">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/70 shadow-sm flex-shrink-0">
+                    <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </span>
+                  お問い合わせ
+                </h2>
+                <p className="text-sm text-primary-700/70 mt-1">導入検討中ですか？ 気軽にご相談ください。</p>
+              </div>
+              <div className="p-6">
+                <InquiryForm productId={product.id} productName={product.name} />
+              </div>
             </div>
-            <div className="p-6">
-              <InquiryForm productId={product.id} productName={product.name} />
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>
