@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getPostBySlug, getAllPosts } from "@/lib/blog/posts";
 import { BlogPostJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
+const BASE_URL = SITE_URL;
 
 interface BlogPostPageProps {
   params: { slug: string };

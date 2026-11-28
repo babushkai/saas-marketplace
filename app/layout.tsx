@@ -12,10 +12,11 @@ import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { Providers } from "@/components/providers/Providers";
+import { SITE_URL } from "@/lib/site";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
+const BASE_URL = SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

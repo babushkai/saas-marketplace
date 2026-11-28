@@ -9,10 +9,11 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { getCategoryColor } from "@/lib/categories";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import type { Product, Seller } from "@/types/database";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://saas-market.jp";
+const BASE_URL = SITE_URL;
 
 interface SellerPageProps {
   params: { username: string };
